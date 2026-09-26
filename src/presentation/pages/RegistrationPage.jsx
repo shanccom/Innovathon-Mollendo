@@ -36,7 +36,7 @@ export default function RegistrationPage() {
                 ['Inversión', EVENT.price],
               ].map(([label, value]) => (
                 <div key={label} className="flex flex-col">
-                  <dt className="text-xs font-bold uppercase tracking-widest text-aqua-600 dark:text-aqua-400">{label}</dt>
+                  <dt className="text-xs font-bold uppercase tracking-widest text-aqua-700 dark:text-aqua-400">{label}</dt>
                   <dd className="mt-0.5 text-navy-800 dark:text-sand-200">{value}</dd>
                 </div>
               ))}

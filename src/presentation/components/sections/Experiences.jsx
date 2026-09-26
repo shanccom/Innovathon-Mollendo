@@ -18,7 +18,7 @@ export function Experiences() {
             <li key={experience.id} className="surface-card flex flex-col p-7 transition hover:-translate-y-1 hover:shadow-glow">
               <Badge>{experience.tag}</Badge>
               <h3 className="mt-4 text-2xl font-extrabold text-navy-900 dark:text-sand-100">{experience.title}</h3>
-              <p className="mt-1 text-sm font-semibold text-aqua-600 dark:text-aqua-400">{experience.highlight}</p>
+              <p className="mt-1 text-sm font-semibold text-aqua-700 dark:text-aqua-400">{experience.highlight}</p>
               <p className="mt-3 text-sm leading-relaxed text-navy-700/80 dark:text-sand-200/70">{experience.description}</p>
             </li>
           ))}

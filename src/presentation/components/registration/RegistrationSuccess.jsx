@@ -13,14 +13,14 @@ export function RegistrationSuccess({ receipt, onReset }) {
       </span>
       <h2 className="mt-6 text-2xl font-extrabold text-navy-900 dark:text-sand-100">¡Registro completado!</h2>
       <p className="mt-3 text-sm leading-relaxed text-navy-700/80 dark:text-sand-200/70">
-        Gracias por inscribirte a {EVENT.edition}. Enviaremos los accesos e instrucciones a{' '} <strong className="text-aqua-600 dark:text-aqua-400">{values.email}</strong> con
+        Gracias por inscribirte a {EVENT.edition}. Enviaremos los accesos e instrucciones a{' '} <strong className="text-aqua-700 dark:text-aqua-400">{values.email}</strong> con
         los accesos e instrucciones del evento.
       </p>
 
       <dl className="mx-auto mt-8 grid max-w-md gap-3 text-left text-sm">
         <div className="flex items-center justify-between gap-4 rounded-xl bg-aqua-500/10 px-4 py-3">
           <dt className="text-xs font-bold uppercase tracking-widest text-navy-700/70 dark:text-sand-200/60">Código</dt>
-          <dd className="font-display font-extrabold text-aqua-600 dark:text-aqua-400">{registrationId}</dd>
+          <dd className="font-display font-extrabold text-aqua-700 dark:text-aqua-400">{registrationId}</dd>
         </div>
         <div className="flex items-center justify-between gap-4 rounded-xl bg-aqua-500/10 px-4 py-3">
           <dt className="text-xs font-bold uppercase tracking-widest text-navy-700/70 dark:text-sand-200/60">Modalidad</dt>

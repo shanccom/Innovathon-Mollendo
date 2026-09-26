@@ -31,12 +31,12 @@ export function Schedule() {
           ))}
         </div>
 
-        <p className="mt-8 text-center text-sm font-semibold text-aqua-600 dark:text-aqua-400">{day.theme}</p>
+        <p className="mt-8 text-center text-sm font-semibold text-aqua-700 dark:text-aqua-400">{day.theme}</p>
 
         <ol className="mt-8 space-y-4">
           {day.activities.map((activity) => (
             <li key={`${day.id}-${activity.time}`} className="surface-card grid gap-3 p-6 sm:grid-cols-[10rem_1fr]">
-              <span className="font-display text-sm font-extrabold text-aqua-600 dark:text-aqua-400">{activity.time}</span>
+              <span className="font-display text-sm font-extrabold text-aqua-700 dark:text-aqua-400">{activity.time}</span>
               <div>
                 <h3 className="text-base font-extrabold text-navy-900 dark:text-sand-100">{activity.title}</h3>
                 <p className="mt-1 text-sm leading-relaxed text-navy-700/80 dark:text-sand-200/70">{activity.description}</p>

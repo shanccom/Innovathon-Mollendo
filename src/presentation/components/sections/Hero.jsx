@@ -18,8 +18,8 @@ export function Hero() {
       <div className="container-page relative grid gap-12 py-20 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-28">
         <div>
           <Badge>{EVENT.edition}</Badge>
-          <h1 className="mt-5 text-4xl font-extrabold leading-[1.05] text-navy-900 sm:text-5xl lg:text-6xl dark:text-sand-50">
-            Las ideas también <span className="text-aqua-600 dark:text-aqua-400">tienen marea</span>
+          <h1 className="mt-5 text-4xl font-extrabold leading-[1.05] text-navy-900 sm:text-5xl lg:text-6xl dark:text-sand-100">
+            Las ideas también <span className="text-aqua-700 dark:text-aqua-400">tienen marea</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-navy-700/85 dark:text-sand-200/80">{EVENT.summary}</p>
 
@@ -30,7 +30,7 @@ export function Hero() {
               ['Duración', EVENT.duration],
             ].map(([label, value]) => (
               <div key={label}>
-                <dt className="text-xs font-bold uppercase tracking-widest text-aqua-600 dark:text-aqua-400">{label}</dt>
+                <dt className="text-xs font-bold uppercase tracking-widest text-aqua-700 dark:text-aqua-400">{label}</dt>
                 <dd className="mt-1 font-semibold text-navy-900 dark:text-sand-100">{value}</dd>
               </div>
             ))}
@@ -45,7 +45,7 @@ export function Hero() {
             </Link>
             <Link
               to={{ pathname: ROUTES.home, hash: '#cronograma' }}
-              className="rounded-full border border-navy-900/20 px-7 py-3 text-sm font-bold text-navy-900 transition hover:border-aqua-500 hover:text-aqua-600 dark:border-white/25 dark:text-sand-100 dark:hover:text-aqua-400"
+              className="rounded-full border border-navy-900/20 px-7 py-3 text-sm font-bold text-navy-900 transition hover:border-aqua-500 hover:text-aqua-700 dark:border-white/25 dark:text-sand-100 dark:hover:text-aqua-400"
             >
               Ver cronograma
             </Link>
@@ -64,7 +64,7 @@ export function Hero() {
       <dl className="container-page relative grid grid-cols-2 gap-4 pb-16 sm:grid-cols-4">
         {EVENT.stats.map((stat) => (
           <div key={stat.label} className="surface-card px-4 py-5 text-center">
-            <dt className="font-display text-2xl font-extrabold text-aqua-600 dark:text-aqua-400">{stat.value}</dt>
+            <dt className="font-display text-2xl font-extrabold text-aqua-700 dark:text-aqua-400">{stat.value}</dt>
             <dd className="mt-1 text-xs font-semibold uppercase tracking-widest text-navy-700/70 dark:text-sand-200/60">
               {stat.label}
             </dd>

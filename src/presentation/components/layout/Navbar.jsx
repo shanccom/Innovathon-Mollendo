@@ -19,7 +19,7 @@ export function Navbar({ theme, onToggleTheme, menuOpen, onToggleMenu, onCloseMe
           <img src={assetUrl('/assets/logo-light.png')} alt="" className="h-8 w-auto shrink-0 dark:hidden" />
           <img src={assetUrl('/assets/logo-dark.png')} alt="" className="hidden h-8 w-auto shrink-0 dark:block" />
           <span className="hidden whitespace-nowrap font-display text-sm font-extrabold uppercase tracking-widest text-navy-900 sm:inline dark:text-sand-100">
-            Innovathon<span className="text-aqua-600 dark:text-aqua-400">Mollendo</span>
+            Innovathon<span className="text-aqua-700 dark:text-aqua-400">Mollendo</span>
           </span>
         </Link>
 
@@ -29,7 +29,7 @@ export function Navbar({ theme, onToggleTheme, menuOpen, onToggleMenu, onCloseMe
               <Link
                 to={{ pathname: ROUTES.home, hash: link.hash }}
                 onClick={onCloseMenu}
-                className="text-sm font-medium text-navy-700 transition hover:text-aqua-600 dark:text-sand-200 dark:hover:text-aqua-400"
+                className="text-sm font-medium text-navy-700 transition hover:text-aqua-700 dark:text-sand-200 dark:hover:text-aqua-400"
               >
                 {link.label}
               </Link>
@@ -41,7 +41,7 @@ export function Navbar({ theme, onToggleTheme, menuOpen, onToggleMenu, onCloseMe
           <button
             type="button"
             onClick={onToggleTheme}
-            className="rounded-full border border-navy-900/15 px-3 py-1.5 text-xs font-semibold text-navy-700 transition hover:border-aqua-500 hover:text-aqua-600 dark:border-white/20 dark:text-sand-200 dark:hover:text-aqua-400"
+            className="rounded-full border border-navy-900/15 px-3 py-1.5 text-xs font-semibold text-navy-700 transition hover:border-aqua-500 hover:text-aqua-700 dark:border-white/20 dark:text-sand-200 dark:hover:text-aqua-400"
             aria-label="Cambiar tema"
           >
             {theme === 'dark' ? 'Claro' : 'Oscuro'}
@@ -79,7 +79,7 @@ export function Navbar({ theme, onToggleTheme, menuOpen, onToggleMenu, onCloseMe
             </li>
           ))}
           <li>
-            <Link to={ROUTES.registration} onClick={onCloseMenu} className="text-sm font-bold text-aqua-600 dark:text-aqua-400">
+            <Link to={ROUTES.registration} onClick={onCloseMenu} className="text-sm font-bold text-aqua-700 dark:text-aqua-400">
               Registrarme
             </Link>
           </li>

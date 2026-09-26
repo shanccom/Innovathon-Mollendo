@@ -18,6 +18,8 @@
   --color-aqua-400: #22d3d4;
   --color-aqua-500: #03c4c5;
   --color-aqua-600: #03a0a1;
+  /* Deepened brand aqua: the only shade that reaches WCAG AA as text on sand-100. */
+  --color-aqua-700: #026e6f;
 
   --color-coral-300: #ffa8bd;
   --color-coral-400: #ff8fab;
