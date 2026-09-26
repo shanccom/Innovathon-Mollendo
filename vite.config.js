@@ -4,8 +4,8 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
-// Base path served by GitHub Pages: "/Innovathon-Mollendo/" for the project site.
-const base = process.env.VITE_BASE_PATH ?? '/Innovathon-Mollendo/';
+// Public path served by GitHub Pages: "/" for the custom domain, "/Innovathon-Mollendo/" for the project site.
+const base = process.env.VITE_BASE_PATH ?? '/';
 
 // GitHub Pages has no SPA rewrite, so 404.html is served for unknown paths like /registro.
 function githubPagesFallback() {

@@ -34,8 +34,9 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # Set the repository variable VITE_BASE_PATH="/" once the custom domain is live.
-          VITE_BASE_PATH: ${{ vars.VITE_BASE_PATH || '/Innovathon-Mollendo/' }}
+          # The custom domain (public/CNAME) is served from the root, so base is "/".
+          # Only switch to "/Innovathon-Mollendo/" if you drop CNAME and use the project site.
+          VITE_BASE_PATH: ${{ vars.VITE_BASE_PATH || '/' }}
           VITE_SITE_URL: ${{ vars.VITE_SITE_URL || 'https://innovathonmollendo.tech' }}
           VITE_APPS_SCRIPT_URL: ${{ secrets.APPS_SCRIPT_URL }}
 
