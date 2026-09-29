@@ -51,8 +51,11 @@ function doGet() {
   return jsonResponse({ success: true, message: 'Innovathon Mollendo · endpoint activo', headers: CONFIG.HEADERS });
 }
 
-// Entrada principal: valida y agrega una fila por postulación.
+// Entrada principal: valida y agrega una fila por postulación bajo lock para evitar colisiones.
 function doPost(event) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+
   try {
     const data = readPayload(event);
     const invalidField = validate(data);
@@ -62,14 +65,18 @@ function doPost(event) {
     }
 
     const sheet = getSheet();
-    const code = nextCode(sheet);
+    const nextRow = sheet.getLastRow();
+    const code = CONFIG.CODE_PREFIX + '-' + new Date().getFullYear() + '-' + String(nextRow).padStart(4, '0');
     const row = [code, new Date()].concat(CONFIG.FIELDS.map((field) => formatValue(data[field])));
 
     sheet.appendRow(row);
+    SpreadsheetApp.flush();
 
     return jsonResponse({ success: true, registrationId: code, registeredAt: new Date().toISOString() });
   } catch (error) {
     return jsonResponse({ success: false, error: 'No se pudo guardar la inscripción: ' + error.message });
+  } finally {
+    lock.releaseLock();
   }
 }
 
@@ -101,17 +108,6 @@ function getSheet() {
   return sheet;
 }
 
-// Genera el código correlativo IM-2026-0001 bajo lock para evitar colisiones.
-function nextCode(sheet) {
-  const lock = LockService.getScriptLock();
-  lock.waitLock(10000);
-
-  try {
-    return CONFIG.CODE_PREFIX + '-' + new Date().getFullYear() + '-' + String(sheet.getLastRow()).padStart(4, '0');
-  } finally {
-    lock.releaseLock();
-  }
-}
 
 // Lee el cuerpo JSON enviado por el frontend.
 function readPayload(event) {
