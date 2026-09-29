@@ -28,20 +28,20 @@ export function Step1PersonalData({ values, errors, onChange, onBlur, onNext }) 
     <div className="space-y-6">
       {/* Section Header matching Figma Paso 1 */}
       <div className="flex items-start justify-between pb-1">
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-3">
+        <div className="space-y-1 sm:space-y-1.5">
+          <div className="flex items-center gap-2.5 sm:gap-3">
             <StepDoubleWave className="h-4 w-6 text-[#6d48e5] shrink-0" />
-            <h2 className="text-xl sm:text-2xl font-bold tracking-[-1px] text-white">
+            <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-white">
               Paso 1: <span className="text-[#b0cf03]">Datos personales</span>
             </h2>
           </div>
-          <p className="pl-9 text-xs sm:text-sm text-[#8795b8]">
+          <p className="pl-8 sm:pl-9 text-xs sm:text-sm text-[#8795b8]">
             Cuéntanos un poco sobre ti para continuar con tu inscripción.
           </p>
         </div>
 
-        {/* 3x3 Dot Grid Matrix matching Figma (30px x 30px, 6px dots, #6D48E5) */}
-        <div className="pt-1.5 shrink-0">
+        {/* 3x3 Dot Grid Matrix */}
+        <div className="pt-1.5 shrink-0 hidden sm:block">
           <DotMatrix className="text-[#6d48e5] opacity-80" dotRadius={3} gap={6} rows={3} cols={3} />
         </div>
       </div>
@@ -438,7 +438,7 @@ export function Step1PersonalData({ values, errors, onChange, onBlur, onNext }) 
         <button
           type="button"
           onClick={onNext}
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-[#b8da02] px-8 py-3 text-sm font-bold text-[#050814] shadow-md shadow-[#b8da02]/20 transition-all hover:bg-[#a6c502] hover:shadow-[#b8da02]/30 active:scale-95 cursor-pointer"
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-[#b8da02] px-8 py-3 text-sm font-bold text-[#050814] shadow-md shadow-[#b8da02]/20 transition-all hover:bg-[#a6c502] hover:shadow-[#b8da02]/30 active:scale-95 cursor-pointer"
         >
           <span>Siguiente</span>
           <ArrowRightIcon className="h-4 w-4" />

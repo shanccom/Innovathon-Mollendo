@@ -24,14 +24,14 @@ export function RegistrationForm({ form }) {
 
   if (status === 'success' && receipt) {
     return (
-      <div className="w-full rounded-[28px] border border-[#1b254b]/80 bg-[#0a0f26]/60 p-6 shadow-2xl backdrop-blur-xl sm:p-10">
+      <div className="w-full rounded-2xl sm:rounded-[28px] border border-[#1b254b]/80 bg-[#0a0f26]/75 p-4 sm:p-7 md:p-10 shadow-2xl backdrop-blur-xl">
         <RegistrationSuccess receipt={receipt} onReset={reset} />
       </div>
     );
   }
 
   return (
-    <div className="w-full rounded-[28px] border border-[#1b254b]/80 bg-[#0a0f26]/60 p-6 shadow-2xl backdrop-blur-xl sm:p-10">
+    <div className="w-full rounded-2xl sm:rounded-[28px] border border-[#1b254b]/80 bg-[#0a0f26]/75 p-4 sm:p-7 md:p-10 shadow-2xl backdrop-blur-xl">
       {/* Stepper Header */}
       <RegistrationStepper currentStep={step} onStepClick={goToStep} />
 

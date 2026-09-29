@@ -22,14 +22,14 @@ export function Step3Terms({
   return (
     <div className="space-y-6 sm:space-y-7">
       {/* Section Header */}
-      <div className="space-y-1.5 pb-1">
-        <div className="flex items-center gap-3">
+      <div className="space-y-1 sm:space-y-1.5 pb-1">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           <Step2SingleWave className="h-3.5 w-7 text-[#741cf3] shrink-0" />
-          <h2 className="text-xl sm:text-2xl font-bold tracking-[-1px] text-white">
+          <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-white">
             Paso 3: <span className="text-[#b0cf03]">Disponibilidad y Términos</span>
           </h2>
         </div>
-        <p className="pl-10 text-xs sm:text-sm text-[#8795b8]">
+        <p className="pl-8 sm:pl-10 text-xs sm:text-sm text-[#8795b8]">
           Último paso. Solo queda confirmar tu participación y aceptar los términos.
         </p>
       </div>
@@ -184,12 +184,12 @@ export function Step3Terms({
       </div>
 
       {/* Action buttons */}
-      <div className="flex items-center justify-between border-t border-[#172044] pt-6 mt-8">
+      <div className="flex items-center justify-between gap-3 border-t border-[#172044] pt-5 sm:pt-6 mt-6 sm:mt-8">
         <button
           type="button"
           onClick={onPrev}
           disabled={isSubmitting}
-          className="inline-flex items-center justify-center gap-2 rounded-full border border-[#2b3765] bg-[#0c132c]/60 px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-white transition-all hover:bg-[#162044] hover:border-[#3b4b85] disabled:opacity-50 cursor-pointer active:scale-95"
+          className="inline-flex items-center justify-center gap-2 rounded-full border border-[#2b3765] bg-[#0c132c]/60 px-5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-white transition-all hover:bg-[#162044] hover:border-[#3b4b85] disabled:opacity-50 cursor-pointer active:scale-95"
         >
           <ArrowLeftIcon className="h-4 w-4" />
           <span>Atrás</span>
@@ -199,7 +199,7 @@ export function Step3Terms({
           type="button"
           onClick={onSubmit}
           disabled={isSubmitting}
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-[#cbfb45] px-8 py-3 sm:py-3.5 text-xs sm:text-sm font-extrabold text-black shadow-[0_0_24px_rgba(203,251,69,0.35)] transition-all hover:bg-[#b0cf03] hover:shadow-[0_0_30px_rgba(203,251,69,0.5)] disabled:opacity-60 cursor-pointer active:scale-95"
+          className="inline-flex items-center justify-center gap-2 rounded-full bg-[#cbfb45] px-6 sm:px-8 py-2.5 sm:py-3.5 text-xs sm:text-sm font-extrabold text-black shadow-[0_0_24px_rgba(203,251,69,0.35)] transition-all hover:bg-[#b0cf03] hover:shadow-[0_0_30px_rgba(203,251,69,0.5)] disabled:opacity-60 cursor-pointer active:scale-95"
         >
           {isSubmitting ? (
             <>

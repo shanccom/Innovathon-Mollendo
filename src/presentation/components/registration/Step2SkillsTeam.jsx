@@ -38,20 +38,20 @@ export function Step2SkillsTeam({
   return (
     <div className="space-y-6">
       {/* Section Header matching Figma Paso 2 */}
-      <div className="space-y-1.5 pb-1">
-        <div className="flex items-center gap-3">
+      <div className="space-y-1 sm:space-y-1.5 pb-1">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           <Step2SingleWave className="h-3.5 w-7 text-[#741cf3] shrink-0" />
-          <h2 className="text-xl sm:text-2xl font-bold tracking-[-1px] text-white">
+          <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-white">
             Paso 2: <span className="text-[#b0cf03]">Habilidades y Equipo</span>
           </h2>
         </div>
-        <p className="pl-10 text-xs sm:text-sm text-[#8795b8]">
+        <p className="pl-8 sm:pl-10 text-xs sm:text-sm text-[#8795b8]">
           Cuéntanos qué te hace único/a y cómo quieres aportar al equipo.
         </p>
       </div>
 
       {/* Two Column Layout: Habilidades y Áreas de Aporte */}
-      <div className="grid gap-8 lg:grid-cols-2">
+      <div className="grid gap-6 lg:gap-8 lg:grid-cols-2">
         {/* Left Column: Habilidades principales */}
         <div className="flex flex-col gap-1.5">
           <label htmlFor="field-skills" className="text-sm font-semibold text-white">
@@ -70,7 +70,7 @@ export function Step2SkillsTeam({
               value={values.skills}
               onChange={onChange}
               onBlur={onBlur}
-              className={`w-full min-h-[350px] resize-none rounded-xl border bg-[#0d1633]/70 p-4 pb-8 text-sm text-white placeholder-slate-500 outline-none transition focus:ring-2 ${
+              className={`w-full min-h-[160px] sm:min-h-[220px] lg:min-h-[340px] resize-none rounded-xl border bg-[#0d1633]/70 p-4 pb-8 text-base sm:text-sm text-white placeholder-slate-500 outline-none transition focus:ring-2 ${
                 errors.skills
                   ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/20'
                   : 'border-[#1b254b] focus:border-[#b8da02] focus:ring-[#b8da02]/20'
@@ -245,11 +245,11 @@ export function Step2SkillsTeam({
       </div>
 
       {/* Form Navigation Buttons */}
-      <div className="flex items-center justify-between pt-4">
+      <div className="flex items-center justify-between gap-3 pt-4">
         <button
           type="button"
           onClick={onPrev}
-          className="inline-flex items-center gap-2 rounded-full border border-[#2b3765] bg-[#0c132c] px-6 py-2.5 text-sm font-semibold text-[#94a3b8] transition-all hover:border-slate-500 hover:text-white active:scale-95 cursor-pointer"
+          className="inline-flex items-center justify-center gap-2 rounded-full border border-[#2b3765] bg-[#0c132c] px-5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-[#94a3b8] transition-all hover:border-slate-500 hover:text-white active:scale-95 cursor-pointer"
         >
           <span>← Atrás</span>
         </button>
@@ -257,7 +257,7 @@ export function Step2SkillsTeam({
         <button
           type="button"
           onClick={onNext}
-          className="inline-flex items-center gap-2 rounded-full bg-[#cbfb45] px-8 py-2.5 text-sm font-bold text-black shadow-md shadow-[#cbfb45]/20 transition-all hover:bg-[#b8da02] active:scale-95 cursor-pointer"
+          className="inline-flex items-center justify-center gap-2 rounded-full bg-[#cbfb45] px-6 sm:px-8 py-2.5 sm:py-3 text-xs sm:text-sm font-bold text-black shadow-md shadow-[#cbfb45]/20 transition-all hover:bg-[#b8da02] active:scale-95 cursor-pointer"
         >
           <span>Siguiente →</span>
         </button>

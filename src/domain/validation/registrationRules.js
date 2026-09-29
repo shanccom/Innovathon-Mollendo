@@ -1,8 +1,9 @@
 import { MAX_SKILLS_LENGTH } from '../entities/registrationCatalog.js';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const INSTITUTIONAL_EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.(edu\.pe|edu)$/i;
-const ALLOWED_PERSONAL_DOMAINS = [
+
+// Common personal webmail providers that should not be used as the institutional email
+const FREE_PERSONAL_PROVIDERS = [
   'gmail.com',
   'hotmail.com',
   'outlook.com',
@@ -11,8 +12,70 @@ const ALLOWED_PERSONAL_DOMAINS = [
   'yahoo.es',
   'icloud.com',
   'live.com',
+  'mail.com',
+  'proton.me',
+  'protonmail.com',
 ];
+
+// Recognized educational and technical institution domains in Peru
+const RECOGNIZED_INSTITUTIONAL_DOMAINS = [
+  'unsa.edu.pe',
+  'senati.pe',
+  'senati.edu.pe',
+  'tecsup.edu.pe',
+  'isil.pe',
+  'isil.edu.pe',
+  'certus.edu.pe',
+  'cibertec.edu.pe',
+  'sencico.gob.pe',
+  'sencico.edu.pe',
+  'ucsm.edu.pe',
+  'ucsp.edu.pe',
+  'utp.edu.pe',
+  'pucp.edu.pe',
+  'pucp.pe',
+  'uni.edu.pe',
+  'unmsm.edu.pe',
+  'ulima.edu.pe',
+  'upc.edu.pe',
+  'usil.edu.pe',
+  'upch.edu.pe',
+  'continental.edu.pe',
+  'iestpjorgebasadre.edu.pe',
+];
+
 const DNI_PATTERN = /^\d{8}$/;
+
+/**
+ * Validates whether an email belongs to an educational or technical institution.
+ */
+export function isValidInstitutionalEmail(email) {
+  if (!email || !EMAIL_PATTERN.test(email)) return false;
+
+  const domain = email.split('@')[1]?.toLowerCase() || '';
+
+  // Reject free personal consumer webmail
+  if (FREE_PERSONAL_PROVIDERS.includes(domain)) {
+    return false;
+  }
+
+  // Matches .edu.pe, .edu, .edu.*, .ac.*, .gob.pe, .org.pe, etc.
+  if (/\.(edu\.pe|edu|edu\.[a-z]{2,}|ac\.[a-z]{2,}|gob\.pe|org\.pe)$/i.test(domain)) {
+    return true;
+  }
+
+  // Matches explicitly recognized institute domains (e.g. senati.pe, isil.pe, etc.)
+  if (RECOGNIZED_INSTITUTIONAL_DOMAINS.some((d) => domain === d || domain.endsWith('.' + d))) {
+    return true;
+  }
+
+  // Matches any domain ending in an educational or institutional technical extension
+  if (/^[a-z0-9-]+(\.[a-z0-9-]+)*\.(pe|edu|org)$/i.test(domain)) {
+    return true;
+  }
+
+  return false;
+}
 
 // Field-level rules kept pure so any UI or test can reuse them.
 export const registrationRules = {
@@ -30,8 +93,15 @@ export const registrationRules = {
   institutionalEmail: (value) => {
     const trimmed = typeof value === 'string' ? value.trim() : '';
     if (!trimmed) return 'El correo institucional es obligatorio.';
-    if (!INSTITUTIONAL_EMAIL_PATTERN.test(trimmed)) {
-      return 'El correo institucional debe ser educativo (ej. usuario@unsa.edu.pe o dominio .edu.pe).';
+    if (!EMAIL_PATTERN.test(trimmed)) {
+      return 'Ingresa un formato de correo válido (ej. usuario@unsa.edu.pe).';
+    }
+    const domain = trimmed.split('@')[1]?.toLowerCase() || '';
+    if (FREE_PERSONAL_PROVIDERS.includes(domain)) {
+      return 'El correo institucional debe ser de tu universidad o instituto (ej. @unsa.edu.pe o @senati.pe). Para correos de Gmail personales, usa el campo "Correo personal".';
+    }
+    if (!isValidInstitutionalEmail(trimmed)) {
+      return 'El correo institucional debe ser educativo o técnico (ej. @unsa.edu.pe, @senati.pe o dominio .edu.pe).';
     }
     return '';
   },
@@ -40,10 +110,6 @@ export const registrationRules = {
     if (!trimmed) return ''; // Opcional
     if (!EMAIL_PATTERN.test(trimmed)) {
       return 'Ingresa un correo electrónico válido.';
-    }
-    const domain = trimmed.split('@')[1]?.toLowerCase();
-    if (!ALLOWED_PERSONAL_DOMAINS.includes(domain)) {
-      return 'Usa un proveedor común (Gmail, Hotmail, Outlook, Yahoo o iCloud).';
     }
     return '';
   },
@@ -153,4 +219,3 @@ export function validateRegistrationField(field, value, registration = {}) {
 export function getFirstInvalidField(errors) {
   return Object.keys(errors)[0] ?? null;
 }
-
