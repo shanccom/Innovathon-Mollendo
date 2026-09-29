@@ -5,6 +5,7 @@
 
 /* Brand tokens extracted from the official Innovathon Mollendo brandkit. */
 @theme {
+  --font-inter: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'Syne', ui-sans-serif, system-ui, sans-serif;
   --font-body: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
 
@@ -62,6 +63,13 @@
 
   .surface-card {
     @apply rounded-3xl border border-navy-900/10 bg-white/70 backdrop-blur-sm dark:border-white/10 dark:bg-navy-900/60;
+  }
+
+  .registration-scope,
+  .registration-scope h1,
+  .registration-scope h2,
+  .registration-scope h3 {
+    font-family: var(--font-inter);
   }
 }
 
