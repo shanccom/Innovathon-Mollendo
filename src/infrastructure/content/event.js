@@ -5,7 +5,7 @@ export const EVENT = {
   slogan: 'Las ideas también tienen marea.',
   summary:
     'Una Innovathon frente al mar para crear soluciones tecnológicas y sostenibles que transformen Mollendo y la región sur.',
-  date: '24 al 26 de abril de 2026',
+  date: '17 y 18 de diciembre de 2026',
   duration: '48 horas de co-creación',
   city: 'Mollendo, Arequipa, Perú',
   venue: 'Malecón Ratti & Estación Cultural',
