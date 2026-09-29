@@ -11,9 +11,9 @@ export default function App() {
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Routes>
+        <Route path={ROUTES.registration} element={<RegistrationPage />} />
         <Route element={<MainLayout />}>
           <Route path={ROUTES.home} element={<HomePage />} />
-          <Route path={ROUTES.registration} element={<RegistrationPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
