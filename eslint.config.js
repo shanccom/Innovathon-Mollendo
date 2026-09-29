@@ -4,7 +4,7 @@ import reactHooks from 'eslint-plugin-react-hooks';
 
 // Flat ESLint config: browser rules for the app, Node rules for tooling files.
 export default [
-  { ignores: ['dist', 'node_modules', 'public', 'apps-script', 'mollethon'] },
+  { ignores: ['dist', 'node_modules', 'public', 'apps-script', 'mollethon', '.agent'] },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
