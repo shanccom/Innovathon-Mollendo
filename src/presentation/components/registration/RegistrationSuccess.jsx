@@ -3,7 +3,7 @@ import { CheckIcon } from './RegistrationIcons';
 
 // Confirmation screen shown after a successful submission.
 export function RegistrationSuccess({ receipt, onReset }) {
-  const { values, registrationId } = receipt;
+  const { values } = receipt;
 
   return (
     <div className="space-y-6 text-center py-4">
@@ -27,11 +27,6 @@ export function RegistrationSuccess({ receipt, onReset }) {
 
       {/* Registration Details Card */}
       <div className="mx-auto max-w-lg rounded-2xl border border-slate-700/80 bg-[#0b132b]/80 p-5 text-left space-y-3.5">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Código de Postulación</span>
-          <span className="font-mono text-base font-black text-[#b8da02]">{registrationId}</span>
-        </div>
-
         <div className="grid grid-cols-2 gap-3 text-xs">
           <div>
             <span className="block font-medium text-slate-400">DNI</span>
