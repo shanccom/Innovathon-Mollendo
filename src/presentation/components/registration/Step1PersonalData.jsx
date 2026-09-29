@@ -19,6 +19,12 @@ import {
 } from './RegistrationIcons';
 
 export function Step1PersonalData({ values, errors, onChange, onBlur, onNext }) {
+  const handleFullNameChange = (e) => {
+    // Permite solo letras del alfabeto español, espacios, tildes, diéresis, apóstrofes y guiones
+    const val = e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]/g, '');
+    onChange({ target: { name: 'fullName', value: val } });
+  };
+
   const handleDniChange = (e) => {
     const val = e.target.value.replace(/\D/g, '').slice(0, 8);
     onChange({ target: { name: 'dni', value: val } });
@@ -64,7 +70,7 @@ export function Step1PersonalData({ values, errors, onChange, onBlur, onNext }) 
               autoComplete="name"
               placeholder="Ej. Ana García Pérez"
               value={values.fullName}
-              onChange={onChange}
+              onChange={handleFullNameChange}
               onBlur={onBlur}
               className={`w-full rounded-xl border bg-[#0d1633]/70 py-3 pl-11 pr-4 text-sm text-white placeholder-slate-500 outline-none transition focus:ring-2 ${
                 errors.fullName

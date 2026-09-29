@@ -58,13 +58,6 @@ export function RegistrationNavbar() {
               Inscripción
             </Link>
           )}
-
-          <a
-            href="mailto:hola@innovathonmollendo.tech"
-            className="text-sm font-medium text-slate-300 transition hover:text-white"
-          >
-            Contacto
-          </a>
         </nav>
 
         {/* Right Action: Event Date Pill (Figma) */}
@@ -113,13 +106,6 @@ export function RegistrationNavbar() {
             >
               Inscripción
             </Link>
-            <a
-              href="mailto:hola@innovathonmollendo.tech"
-              onClick={() => setMobileMenuOpen(false)}
-              className="py-1 text-slate-300 hover:text-white"
-            >
-              Contacto
-            </a>
           </div>
         </div>
       )}

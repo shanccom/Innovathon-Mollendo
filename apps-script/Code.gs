@@ -131,6 +131,7 @@ function readPayload(event) {
 // Devuelve el primer error encontrado o una cadena vacía si todo está bien.
 function validate(data) {
   if (!data.fullName || String(data.fullName).trim().length < 3) return 'Ingresa tus nombres y apellidos completos.';
+  if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]+$/.test(String(data.fullName).trim())) return 'El nombre solo debe contener letras y espacios (sin números).';
   if (!/^\d{8}$/.test(String(data.dni || '').trim())) return 'El DNI debe tener 8 dígitos numéricos.';
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(data.institutionalEmail || '').trim())) return 'El correo institucional no es válido.';
   if (!data.sede) return 'Selecciona una sede o localidad.';

@@ -77,12 +77,17 @@ export function isValidInstitutionalEmail(email) {
   return false;
 }
 
+const NAME_PATTERN = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]+$/;
+
 // Field-level rules kept pure so any UI or test can reuse them.
 export const registrationRules = {
   fullName: (value) => {
     const trimmed = typeof value === 'string' ? value.trim() : '';
     if (!trimmed) return 'Ingresa tus nombres y apellidos.';
     if (trimmed.length < 3) return 'Ingresa tu nombre completo (mínimo 3 caracteres).';
+    if (!NAME_PATTERN.test(trimmed)) {
+      return 'El nombre solo debe contener letras, espacios o guiones (sin números ni símbolos especiales).';
+    }
     return '';
   },
   dni: (value) => {
