@@ -1,4 +1,4 @@
-import { RegistrationRepositoryError } from '../errors/registrationErrors';
+import { RegistrationRepositoryError } from '../errors/registrationErrors.js';
 
 // Repository port: the domain owns the contract, infrastructure provides the adapter.
 // Contract: `save(registration)` resolves with a confirmation payload

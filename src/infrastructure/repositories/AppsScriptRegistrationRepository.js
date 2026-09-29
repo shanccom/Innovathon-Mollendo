@@ -1,6 +1,6 @@
-import { RegistrationRepository } from '../../domain/repositories/RegistrationRepository';
-import { RegistrationRepositoryError } from '../../domain/errors/registrationErrors';
-import { assertRegistrationEndpoint, env } from '../config/env';
+import { RegistrationRepository } from '../../domain/repositories/RegistrationRepository.js';
+import { RegistrationRepositoryError } from '../../domain/errors/registrationErrors.js';
+import { assertRegistrationEndpoint, env } from '../config/env.js';
 
 // Adapter that persists registrations into a Google Sheet through an Apps Script web app.
 export class AppsScriptRegistrationRepository extends RegistrationRepository {

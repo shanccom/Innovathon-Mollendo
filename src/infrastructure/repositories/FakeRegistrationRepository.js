@@ -1,6 +1,6 @@
-import { RegistrationRepository } from '../../domain/repositories/RegistrationRepository';
-import { RegistrationRepositoryError } from '../../domain/errors/registrationErrors';
-import { STORAGE_KEYS } from '../../shared/constants/storageKeys';
+import { RegistrationRepository } from '../../domain/repositories/RegistrationRepository.js';
+import { RegistrationRepositoryError } from '../../domain/errors/registrationErrors.js';
+import { STORAGE_KEYS } from '../../shared/constants/storageKeys.js';
 
 // Adapter used for local development: keeps registrations in localStorage.
 export class FakeRegistrationRepository extends RegistrationRepository {

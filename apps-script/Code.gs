@@ -12,9 +12,12 @@ const CONFIG = {
     'institutionalEmail',
     'personalEmail',
     'institution',
+    'otherInstitution',
     'academicLevel',
     'sede',
+    'otherSede',
     'career',
+    'otherCareer',
     'skills',
     'contributionAreas',
     'challengeInterest',
@@ -32,9 +35,12 @@ const CONFIG = {
     'Correo institucional',
     'Correo personal',
     'Institución de procedencia',
+    'Otra institución',
     'Nivel académico',
     'Sede',
+    'Otra sede',
     'Carrera / Especialidad',
+    'Otra carrera',
     'Habilidades principales',
     'Áreas de aporte',
     'Eje temático / Reto',
@@ -124,23 +130,33 @@ function readPayload(event) {
 
 // Devuelve el primer error encontrado o una cadena vacía si todo está bien.
 function validate(data) {
-  if (!data.fullName) return 'Ingresa tus nombres y apellidos.';
+  if (!data.fullName || String(data.fullName).trim().length < 3) return 'Ingresa tus nombres y apellidos completos.';
   if (!/^\d{8}$/.test(String(data.dni || '').trim())) return 'El DNI debe tener 8 dígitos numéricos.';
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.institutionalEmail || '')) return 'El correo institucional no es válido.';
-  if (!data.sede) return 'Selecciona una sede.';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(data.institutionalEmail || '').trim())) return 'El correo institucional no es válido.';
+  if (!data.sede) return 'Selecciona una sede o localidad.';
   if (!data.career) return 'Selecciona tu carrera o área.';
-  if (!data.skills) return 'Describe tus habilidades principales.';
+  if (!data.skills || String(data.skills).trim().length === 0) return 'Describe tus habilidades principales.';
   if (!data.availability) return 'Debes confirmar tu disponibilidad presencial.';
   if (!data.termsAccepted) return 'Debes aceptar los términos y condiciones.';
   return '';
 }
 
-// Normaliza los valores antes de escribirlos en la hoja.
+// Normaliza los valores antes de escribirlos en la hoja y previene Formula Injection.
 function formatValue(value) {
-  if (Array.isArray(value)) return value.join(', ');
+  if (Array.isArray(value)) {
+    return value.map(formatValue).join(', ');
+  }
   if (value === true) return 'Sí';
   if (value === false || value === null || value === undefined || value === '') return '';
-  return value;
+
+  const str = String(value).trim();
+
+  // Neutraliza fórmulas no autorizadas (=, +, -, @, tabulaciones o retornos de carro)
+  if (/^[=+\-@\t\r\n]/.test(str)) {
+    return "'" + str;
+  }
+
+  return str;
 }
 
 // Siempre responde JSON para que el frontend pueda parsearlo.

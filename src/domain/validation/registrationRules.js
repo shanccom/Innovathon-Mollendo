@@ -50,7 +50,7 @@ const DNI_PATTERN = /^\d{8}$/;
  * Validates whether an email belongs to an educational or technical institution.
  */
 export function isValidInstitutionalEmail(email) {
-  if (!email || !EMAIL_PATTERN.test(email)) return false;
+  if (!email || !EMAIL_PATTERN.test(email) || email.includes('..')) return false;
 
   const domain = email.split('@')[1]?.toLowerCase() || '';
 
@@ -108,7 +108,7 @@ export const registrationRules = {
   personalEmail: (value) => {
     const trimmed = typeof value === 'string' ? value.trim() : '';
     if (!trimmed) return ''; // Opcional
-    if (!EMAIL_PATTERN.test(trimmed)) {
+    if (!EMAIL_PATTERN.test(trimmed) || trimmed.includes('..')) {
       return 'Ingresa un correo electrónico válido.';
     }
     return '';
