@@ -8,17 +8,19 @@ const CONFIG = {
   CODE_PREFIX: 'IM',
   FIELDS: [
     'fullName',
-    'email',
-    'phone',
-    'city',
-    'age',
-    'occupation',
-    'interestArea',
-    'experienceLevel',
-    'participationType',
-    'teamName',
-    'teamSize',
-    'motivation',
+    'dni',
+    'institutionalEmail',
+    'personalEmail',
+    'institution',
+    'academicLevel',
+    'sede',
+    'career',
+    'skills',
+    'contributionAreas',
+    'challengeInterest',
+    'referencePerson',
+    'portfolioUrl',
+    'availability',
     'termsAccepted',
     'source',
   ],
@@ -26,17 +28,19 @@ const CONFIG = {
     'Código',
     'Fecha de registro',
     'Nombres y apellidos',
-    'Correo',
-    'Celular',
-    'Ciudad',
-    'Edad',
-    'Ocupación o institución',
-    'Área de aporte',
-    'Nivel de experiencia',
-    'Modalidad',
-    'Nombre del equipo',
-    'Integrantes',
-    'Motivación',
+    'DNI',
+    'Correo institucional',
+    'Correo personal',
+    'Institución de procedencia',
+    'Nivel académico',
+    'Sede',
+    'Carrera / Especialidad',
+    'Habilidades principales',
+    'Áreas de aporte',
+    'Eje temático / Reto',
+    'Compañero / Recomendación',
+    'LinkedIn / Portafolio',
+    'Disponibilidad presencial',
     'Aceptó términos',
     'Origen',
   ],
@@ -125,15 +129,19 @@ function readPayload(event) {
 // Devuelve el primer error encontrado o una cadena vacía si todo está bien.
 function validate(data) {
   if (!data.fullName) return 'Ingresa tus nombres y apellidos.';
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email || '')) return 'El correo electrónico no es válido.';
-  if (!/^\+?\d{8,15}$/.test(String(data.phone || '').replace(/[\s\-()]/g, ''))) return 'El número de celular no es válido.';
-  if (!data.termsAccepted) return 'Debes aceptar el código de conducta.';
-  if (data.participationType === 'team' && !data.teamName) return 'Ingresa el nombre del equipo.';
+  if (!/^\d{8}$/.test(String(data.dni || '').trim())) return 'El DNI debe tener 8 dígitos numéricos.';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.institutionalEmail || '')) return 'El correo institucional no es válido.';
+  if (!data.sede) return 'Selecciona una sede.';
+  if (!data.career) return 'Selecciona tu carrera o área.';
+  if (!data.skills) return 'Describe tus habilidades principales.';
+  if (!data.availability) return 'Debes confirmar tu disponibilidad presencial.';
+  if (!data.termsAccepted) return 'Debes aceptar los términos y condiciones.';
   return '';
 }
 
 // Normaliza los valores antes de escribirlos en la hoja.
 function formatValue(value) {
+  if (Array.isArray(value)) return value.join(', ');
   if (value === true) return 'Sí';
   if (value === false || value === null || value === undefined || value === '') return '';
   return value;
