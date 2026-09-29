@@ -1,6 +1,6 @@
-import { createRegistration } from '../../domain/entities/Registration';
-import { getFirstInvalidField, validateRegistration } from '../../domain/validation/registrationRules';
-import { RegistrationValidationError } from '../../domain/errors/registrationErrors';
+import { createRegistration } from '../../domain/entities/Registration.js';
+import { getFirstInvalidField, validateRegistration } from '../../domain/validation/registrationRules.js';
+import { RegistrationValidationError } from '../../domain/errors/registrationErrors.js';
 
 // Use case orchestrating the registration flow: normalize -> validate -> persist.
 export class SubmitRegistration {

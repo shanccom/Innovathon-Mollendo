@@ -1,42 +1,60 @@
-import { INTEREST_AREAS, PARTICIPATION_TYPES, TEAM_SIZES } from './registrationCatalog';
+import { MAX_SKILLS_LENGTH } from './registrationCatalog.js';
 
 // Factory with the blank shape the registration form starts from.
 export function createEmptyRegistration() {
   return {
+    // Paso 1: Datos Personales y Académicos
     fullName: '',
-    email: '',
-    phone: '',
-    city: 'Mollendo',
-    age: '',
-    occupation: '',
-    interestArea: INTEREST_AREAS[0],
-    experienceLevel: 'Intermedio',
-    participationType: PARTICIPATION_TYPES[0],
-    teamName: '',
-    teamSize: TEAM_SIZES[0],
-    motivation: '',
+    dni: '',
+    institutionalEmail: '',
+    personalEmail: '',
+    sede: '',
+    otherSede: '',
+    career: '',
+    otherCareer: '',
+    institution: '',
+    otherInstitution: '',
+    academicLevel: '',
+
+    // Paso 2: Habilidades y Equipo
+    skills: '',
+    contributionAreas: [],
+    challengeInterest: '',
+    referencePerson: '',
+    portfolioUrl: '',
+
+    // Paso 3: Confirmación y Términos
+    availability: false,
     termsAccepted: false,
   };
 }
 
 // Normalizes raw form input into the canonical entity sent to the backend.
 export function createRegistration(input = {}) {
-  const participationType = PARTICIPATION_TYPES.includes(input.participationType) ? input.participationType : PARTICIPATION_TYPES[0];
-  const isTeam = participationType === 'team';
+  const contributionAreas = Array.isArray(input.contributionAreas)
+    ? input.contributionAreas.map(cleanText).filter(Boolean)
+    : cleanText(input.contributionAreas)
+      ? [cleanText(input.contributionAreas)]
+      : [];
 
   return {
     fullName: cleanText(input.fullName),
-    email: cleanText(input.email).toLowerCase(),
-    phone: cleanPhone(input.phone),
-    city: cleanText(input.city),
-    age: Number.parseInt(input.age, 10) || null,
-    occupation: cleanText(input.occupation),
-    interestArea: INTEREST_AREAS.includes(input.interestArea) ? input.interestArea : INTEREST_AREAS[0],
-    experienceLevel: cleanText(input.experienceLevel),
-    participationType,
-    teamName: isTeam ? cleanText(input.teamName) : null,
-    teamSize: isTeam ? TEAM_SIZES.find((size) => String(size) === String(input.teamSize)) ?? TEAM_SIZES[0] : null,
-    motivation: cleanText(input.motivation),
+    dni: cleanDigits(input.dni),
+    institutionalEmail: cleanText(input.institutionalEmail).toLowerCase(),
+    personalEmail: cleanText(input.personalEmail).toLowerCase(),
+    sede: cleanText(input.sede),
+    otherSede: cleanText(input.otherSede),
+    career: cleanText(input.career),
+    otherCareer: cleanText(input.otherCareer),
+    institution: cleanText(input.institution),
+    otherInstitution: cleanText(input.otherInstitution),
+    academicLevel: cleanText(input.academicLevel),
+    skills: cleanText(input.skills).slice(0, MAX_SKILLS_LENGTH),
+    contributionAreas,
+    challengeInterest: cleanText(input.challengeInterest),
+    referencePerson: cleanText(input.referencePerson),
+    portfolioUrl: cleanText(input.portfolioUrl),
+    availability: Boolean(input.availability),
     termsAccepted: Boolean(input.termsAccepted),
   };
 }
@@ -45,6 +63,7 @@ function cleanText(value) {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-function cleanPhone(value) {
-  return cleanText(value).replace(/[\s\-()]/g, '');
+function cleanDigits(value) {
+  return cleanText(value).replace(/\D/g, '');
 }
+

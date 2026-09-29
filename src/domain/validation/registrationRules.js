@@ -1,36 +1,135 @@
-import { MAX_AGE, MIN_AGE, TEAM_SIZES } from '../entities/registrationCatalog';
+import { MAX_SKILLS_LENGTH } from '../entities/registrationCatalog.js';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PHONE_PATTERN = /^\+?\d{8,15}$/;
+const INSTITUTIONAL_EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.(edu\.pe|edu)$/i;
+const ALLOWED_PERSONAL_DOMAINS = [
+  'gmail.com',
+  'hotmail.com',
+  'outlook.com',
+  'outlook.es',
+  'yahoo.com',
+  'yahoo.es',
+  'icloud.com',
+  'live.com',
+];
+const DNI_PATTERN = /^\d{8}$/;
 
 // Field-level rules kept pure so any UI or test can reuse them.
 export const registrationRules = {
-  fullName: (value) => (value.trim() ? '' : 'Ingresa tus nombres y apellidos.'),
-  email: (value) => {
-    if (!value.trim()) return 'El correo electrónico es obligatorio.';
-    return EMAIL_PATTERN.test(value.trim()) ? '' : 'Ingresa un correo válido (ej. usuario@dominio.com).';
+  fullName: (value) => {
+    const trimmed = typeof value === 'string' ? value.trim() : '';
+    if (!trimmed) return 'Ingresa tus nombres y apellidos.';
+    if (trimmed.length < 3) return 'Ingresa tu nombre completo (mínimo 3 caracteres).';
+    return '';
   },
-  phone: (value) => {
-    const clean = value.replace(/[\s\-()]/g, '');
-    if (!clean) return 'El celular es obligatorio.';
-    return PHONE_PATTERN.test(clean) ? '' : 'Ingresa un celular válido (mínimo 8 dígitos).';
+  dni: (value) => {
+    const clean = typeof value === 'string' ? value.trim() : String(value ?? '').trim();
+    if (!clean) return 'El número de DNI es obligatorio.';
+    return DNI_PATTERN.test(clean) ? '' : 'El DNI debe contener exactamente 8 dígitos numéricos.';
   },
-  city: (value) => (value.trim() ? '' : 'Indica tu ciudad de residencia.'),
-  age: (value) => {
-    const age = Number.parseInt(value, 10);
-    if (!value) return 'Ingresa tu edad.';
-    if (Number.isNaN(age) || age < MIN_AGE || age > MAX_AGE) {
-      return `La edad debe estar entre ${MIN_AGE} y ${MAX_AGE} años.`;
+  institutionalEmail: (value) => {
+    const trimmed = typeof value === 'string' ? value.trim() : '';
+    if (!trimmed) return 'El correo institucional es obligatorio.';
+    if (!INSTITUTIONAL_EMAIL_PATTERN.test(trimmed)) {
+      return 'El correo institucional debe ser educativo (ej. usuario@unsa.edu.pe o dominio .edu.pe).';
     }
     return '';
   },
-  occupation: (value) => (value.trim() ? '' : 'Indica tu ocupación, universidad o colegio.'),
-  teamName: (value, registration) =>
-    registration.participationType === 'team' && !value.trim() ? 'Ingresa el nombre de tu equipo.' : '',
-  teamSize: (value, registration) =>
-    registration.participationType === 'team' && !TEAM_SIZES.includes(Number(value)) ? 'Selecciona el número de integrantes.' : '',
-  termsAccepted: (value) => (value ? '' : 'Debes aceptar el código de conducta y el tratamiento de datos.'),
+  personalEmail: (value) => {
+    const trimmed = typeof value === 'string' ? value.trim() : '';
+    if (!trimmed) return ''; // Opcional
+    if (!EMAIL_PATTERN.test(trimmed)) {
+      return 'Ingresa un correo electrónico válido.';
+    }
+    const domain = trimmed.split('@')[1]?.toLowerCase();
+    if (!ALLOWED_PERSONAL_DOMAINS.includes(domain)) {
+      return 'Usa un proveedor común (Gmail, Hotmail, Outlook, Yahoo o iCloud).';
+    }
+    return '';
+  },
+  sede: (value) => (value && String(value).trim() ? '' : 'Selecciona una sede o localidad.'),
+  otherSede: (value, reg) => {
+    if (reg?.sede === 'Otra localidad') {
+      const trimmed = typeof value === 'string' ? value.trim() : '';
+      if (!trimmed) return 'Especifica tu localidad de residencia.';
+    }
+    return '';
+  },
+  career: (value) => (value && String(value).trim() ? '' : 'Selecciona tu carrera o área.'),
+  otherCareer: (value, reg) => {
+    if (reg?.career === 'Otra carrera o especialidad') {
+      const trimmed = typeof value === 'string' ? value.trim() : '';
+      if (!trimmed) return 'Especifica tu carrera o especialidad.';
+    }
+    return '';
+  },
+  institution: (value) => (value && String(value).trim() ? '' : 'Selecciona tu institución de procedencia.'),
+  otherInstitution: (value, reg) => {
+    if (reg?.institution === 'Otra institución de educación superior') {
+      const trimmed = typeof value === 'string' ? value.trim() : '';
+      if (!trimmed) return 'Especifica el nombre de tu institución.';
+    }
+    return '';
+  },
+  academicLevel: (value) => (value && String(value).trim() ? '' : 'Selecciona tu nivel académico.'),
+  skills: (value) => {
+    const trimmed = typeof value === 'string' ? value.trim() : '';
+    if (!trimmed) return 'Describe tus habilidades principales.';
+    if (trimmed.length > MAX_SKILLS_LENGTH) {
+      return `Las habilidades no pueden superar los ${MAX_SKILLS_LENGTH} caracteres.`;
+    }
+    return '';
+  },
+  contributionAreas: (value) => {
+    if (Array.isArray(value) && value.length > 0) return '';
+    if (typeof value === 'string' && value.trim()) return '';
+    return 'Selecciona al menos una área de aporte.';
+  },
+  challengeInterest: (value) =>
+    value && String(value).trim()
+      ? ''
+      : 'Selecciona un eje temático o reto de interés (o elige Abierto).',
+  referencePerson: () => '',
+  portfolioUrl: () => '',
+  availability: (value) =>
+    value ? '' : 'Debes confirmar tu disponibilidad presencial para las fechas del evento (17 y 18 de diciembre).',
+  termsAccepted: (value) =>
+    value ? '' : 'Debes aceptar los Términos y Condiciones y el Tratamiento de Datos Personales.',
 };
+
+export const STEP_FIELDS = {
+  1: [
+    'fullName',
+    'dni',
+    'institutionalEmail',
+    'personalEmail',
+    'sede',
+    'otherSede',
+    'career',
+    'otherCareer',
+    'institution',
+    'otherInstitution',
+    'academicLevel',
+  ],
+  2: ['skills', 'contributionAreas', 'challengeInterest', 'referencePerson', 'portfolioUrl'],
+  3: ['availability', 'termsAccepted'],
+};
+
+// Validates fields for a specific step (1, 2, or 3).
+export function validateStep(step, registration) {
+  const fields = STEP_FIELDS[step] ?? [];
+  const errors = {};
+
+  for (const field of fields) {
+    const rule = registrationRules[field];
+    if (rule) {
+      const message = rule(registration[field] ?? '', registration);
+      if (message) errors[field] = message;
+    }
+  }
+
+  return errors;
+}
 
 // Runs every rule and returns a field -> message map (empty when valid).
 export function validateRegistration(registration) {
@@ -54,3 +153,4 @@ export function validateRegistrationField(field, value, registration = {}) {
 export function getFirstInvalidField(errors) {
   return Object.keys(errors)[0] ?? null;
 }
+
