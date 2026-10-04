@@ -1,5 +1,11 @@
 import { EVENT } from '../../../infrastructure/content/event';
-import { CheckIcon } from './RegistrationIcons';
+import {
+  CheckIcon,
+  DocumentHubIcon,
+  BookOpenIcon,
+  ScaleIcon,
+  ExternalLinkIcon,
+} from './RegistrationIcons';
 
 // Confirmation screen shown after a successful submission.
 export function RegistrationSuccess({ receipt, onReset }) {
@@ -62,9 +68,57 @@ export function RegistrationSuccess({ receipt, onReset }) {
         </div>
       </div>
 
-      <div className="mx-auto max-w-md rounded-xl bg-cyan-950/30 border border-cyan-500/20 p-4 text-xs text-cyan-200/90 leading-relaxed text-left">
-        <strong>¿Qué sigue?</strong> El equipo revisará tu postulación y te contactará a tu correo institucional{' '}
-        con la confirmación de tu cupo y el enlace a la comunidad de participantes.
+      {/* What's next & Resources */}
+      <div className="mx-auto max-w-lg rounded-2xl border border-slate-700/80 bg-[#0b132b]/80 p-5 text-xs text-left space-y-4">
+        <div>
+          <span className="inline-flex items-center gap-2 font-bold text-sm text-white mb-1">
+            <span className="inline-block h-2 w-2 rounded-full bg-[#b8da02]"></span>
+            ¿Qué sigue ahora?
+          </span>
+          <p className="text-slate-300 text-xs mt-1 leading-relaxed">
+            El equipo organizador revisará tu postulación y te contactará a tu correo institucional. Ya puedes acceder a los enlaces clave del evento:
+          </p>
+        </div>
+
+        {/* CTA Enlaces Importantes Google Doc */}
+        <a
+          href={EVENT.documents.enlacesImportantes}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-between gap-3 w-full rounded-xl bg-[#cbfb45] px-4 py-3 text-xs sm:text-sm font-extrabold text-[#050814] shadow-[0_0_20px_rgba(203,251,69,0.25)] transition-all hover:bg-[#b0cf03] hover:shadow-[0_0_25px_rgba(203,251,69,0.4)] active:scale-[0.98] group cursor-pointer"
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <DocumentHubIcon className="h-5 w-5 text-[#050814] shrink-0" />
+            <span className="truncate">Ver Enlaces y Recursos Importantes</span>
+          </div>
+          <ExternalLinkIcon className="h-4 w-4 text-[#050814] shrink-0 transition-transform group-hover:translate-x-0.5" />
+        </a>
+
+        {/* Secondary links */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-700/80 text-[11px] text-slate-400">
+          <span>Documentos oficiales:</span>
+          <div className="flex items-center gap-3">
+            <a
+              href={EVENT.documents.bases}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-slate-300 hover:text-[#b8da02] transition-colors"
+            >
+              <BookOpenIcon className="h-3.5 w-3.5 text-white" />
+              <span>Bases ↗</span>
+            </a>
+            <span className="text-slate-600">•</span>
+            <a
+              href={EVENT.documents.reglamento}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-slate-300 hover:text-[#b8da02] transition-colors"
+            >
+              <ScaleIcon className="h-3.5 w-3.5 text-white" />
+              <span>Reglamento ↗</span>
+            </a>
+          </div>
+        </div>
       </div>
 
       <div className="pt-2">

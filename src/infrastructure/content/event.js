@@ -56,4 +56,10 @@ export const EVENT = {
     github: 'https://github.com/shanccom/Innovathon-Mollendo',
     email: 'hola@innovathonmollendo.tech',
   },
+  documents: {
+    bases: 'https://canva.link/s7gmbpkznambc42',
+    reglamento: 'https://canva.link/c0cjg7lm9gz4cjc',
+    enlacesImportantes:
+      'https://docs.google.com/document/d/1vloxxOFq7wVlgddPAwtp_tz54XVCxRtmAFJtHk0DZG4/edit?usp=sharing',
+  },
 };

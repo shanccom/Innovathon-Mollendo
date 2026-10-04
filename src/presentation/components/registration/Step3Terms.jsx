@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { EVENT } from '../../../infrastructure/content/event';
 import {
   ShieldCheckIcon,
   ExternalLinkIcon,
@@ -7,6 +8,8 @@ import {
   Step2SingleWave,
   StepOfficialDocIcon,
   LinkIcon,
+  BookOpenIcon,
+  ScaleIcon,
 } from './RegistrationIcons';
 
 export function Step3Terms({
@@ -89,33 +92,64 @@ export function Step3Terms({
         )}
       </div>
 
-      {/* Bases Oficiales Card */}
+      {/* Documentos Oficiales */}
       <div className="rounded-2xl border border-[#1b254b]/80 bg-[#080d22]/50 p-5 sm:p-6 space-y-4">
         <div className="flex items-start gap-3.5">
           <StepOfficialDocIcon className="h-6 w-6 text-[#8A64FF] shrink-0 mt-0.5" />
           <div>
-            <h3 className="text-sm sm:text-base font-bold text-white">Bases Oficiales</h3>
+            <h3 className="text-sm sm:text-base font-bold text-white">Documentos de la Competencia</h3>
             <p className="text-xs text-[#8795b8] mt-0.5">
-              Revisa aquí las bases y consideraciones del evento.
+              Revisa las bases y el reglamento oficial antes de completar tu registro.
             </p>
           </div>
         </div>
 
-        {/* Link Input Bar */}
-        <a
-          href="https://innovathonmollendo.pe/bases-oficiales.pdf"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-between rounded-xl border border-[#172146] bg-[#060b1e]/90 px-4 py-3 text-xs sm:text-sm text-slate-300 transition-colors hover:border-[#8A64FF]/60 group cursor-pointer"
-        >
-          <div className="flex items-center gap-2.5 min-w-0">
-            <LinkIcon className="h-4 w-4 text-[#8795b8] shrink-0 group-hover:text-[#8A64FF] transition-colors" />
-            <span className="font-mono text-xs sm:text-sm text-slate-300 truncate">
-              https://innovathonmollendo.pe/bases-oficiales.pdf
-            </span>
-          </div>
-          <ExternalLinkIcon className="h-4 w-4 text-[#8795b8] shrink-0 ml-2 group-hover:text-white transition-colors" />
-        </a>
+        {/* 2 Documents Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          <a
+            href={EVENT.documents.bases}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between rounded-xl border border-[#1e2a5e] bg-[#09102c]/90 p-3.5 text-xs text-slate-300 transition-all hover:border-[#b0cf03]/80 hover:bg-[#0e1942] group cursor-pointer"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 border border-white/20 text-white shadow-sm group-hover:bg-white/20 transition-colors">
+                <BookOpenIcon className="h-5 w-5 text-white" />
+              </div>
+              <div className="min-w-0">
+                <span className="block font-bold text-white text-xs sm:text-sm truncate group-hover:text-[#cbfb45] transition-colors">
+                  Bases del Evento
+                </span>
+                <span className="block text-[11px] text-slate-400">
+                  Criterios y retos (Canva)
+                </span>
+              </div>
+            </div>
+            <ExternalLinkIcon className="h-4 w-4 text-slate-400 shrink-0 ml-2 group-hover:text-white transition-colors" />
+          </a>
+
+          <a
+            href={EVENT.documents.reglamento}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between rounded-xl border border-[#1e2a5e] bg-[#09102c]/90 p-3.5 text-xs text-slate-300 transition-all hover:border-[#03c4c5]/80 hover:bg-[#0e1942] group cursor-pointer"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 border border-white/20 text-white shadow-sm group-hover:bg-white/20 transition-colors">
+                <ScaleIcon className="h-5 w-5 text-white" />
+              </div>
+              <div className="min-w-0">
+                <span className="block font-bold text-white text-xs sm:text-sm truncate group-hover:text-[#03c4c5] transition-colors">
+                  Reglamento Oficial
+                </span>
+                <span className="block text-[11px] text-slate-400">
+                  Normas y conducta (Canva)
+                </span>
+              </div>
+            </div>
+            <ExternalLinkIcon className="h-4 w-4 text-slate-400 shrink-0 ml-2 group-hover:text-white transition-colors" />
+          </a>
+        </div>
       </div>
 
       {/* Checkbox 2: Términos y Condiciones */}

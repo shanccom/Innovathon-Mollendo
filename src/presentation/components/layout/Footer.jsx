@@ -7,7 +7,7 @@ export function Footer() {
   return (
     <footer className="border-t border-navy-900/10 bg-navy-900 text-sand-100 dark:border-white/10 dark:bg-navy-950">
       <div className="container-page grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="min-w-0 sm:col-span-2">
+        <div className="min-w-0">
           <p className="font-display text-lg font-extrabold uppercase tracking-wider break-words">
             Innovathon<span className="text-aqua-400">Mollendo</span>
           </p>
@@ -21,6 +21,42 @@ export function Footer() {
             <li>{EVENT.venue}</li>
             <li>{EVENT.city}</li>
             <li>{EVENT.price}</li>
+          </ul>
+        </div>
+
+        <div className="min-w-0">
+          <h2 className="text-xs font-bold uppercase tracking-widest text-aqua-400">Documentos</h2>
+          <ul className="mt-4 space-y-2 text-sm text-sand-200/80">
+            <li>
+              <a
+                className="hover:text-aqua-400 inline-flex items-center gap-1"
+                href={EVENT.documents.bases}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Bases de la competencia ↗
+              </a>
+            </li>
+            <li>
+              <a
+                className="hover:text-aqua-400 inline-flex items-center gap-1"
+                href={EVENT.documents.reglamento}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Reglamento oficial ↗
+              </a>
+            </li>
+            <li>
+              <a
+                className="hover:text-aqua-400 inline-flex items-center gap-1"
+                href={EVENT.documents.enlacesImportantes}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Enlaces importantes ↗
+              </a>
+            </li>
           </ul>
         </div>
 
