@@ -7,7 +7,6 @@ import {
   CheckIcon,
   Step2SingleWave,
   StepOfficialDocIcon,
-  LinkIcon,
   BookOpenIcon,
   ScaleIcon,
 } from './RegistrationIcons';
