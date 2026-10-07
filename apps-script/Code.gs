@@ -171,11 +171,6 @@ function sendConfirmationEmail(data, code) {
     <div style="padding: 28px 24px; color: #cbd5e1; font-size: 14px; line-height: 1.6;">
       <p style="margin-top: 0; font-size: 15px;">Hola <strong style="color: #ffffff;">${fullName}</strong>,</p>
       <p>Tu postulación para la <strong>Innovathon Mollendo 2026</strong> ha sido enviada y registrada correctamente en nuestro sistema.</p>
-      
-      <div style="background: rgba(116, 28, 243, 0.15); border: 1px dashed #741cf3; border-radius: 12px; padding: 14px; text-align: center; margin: 20px 0;">
-        <div style="font-size: 11px; color: #c4b5fd; letter-spacing: 1.5px; text-transform: uppercase; font-weight: bold;">Código de Postulación</div>
-        <div style="font-size: 22px; font-weight: 900; color: #cbfb45; letter-spacing: 2px; font-family: monospace; margin-top: 4px;">${code}</div>
-      </div>
 
       <div style="background: #070a18; border: 1px solid #1e295d; border-radius: 14px; padding: 18px; margin: 20px 0;">
         <div style="margin-bottom: 10px;">
@@ -228,7 +223,6 @@ function sendConfirmationEmail(data, code) {
     `;
 
     const plainText = '¡Hola ' + fullName + '! Tu postulación para Innovathon Mollendo 2026 ha sido recibida con éxito.\n\n' +
-      'Código de Postulación: ' + code + '\n' +
       'DNI: ' + dni + '\n' +
       'Sede: ' + sede + '\n' +
       (career ? 'Carrera: ' + career + '\n' : '') +
