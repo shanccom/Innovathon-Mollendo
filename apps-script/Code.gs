@@ -149,6 +149,25 @@ function sendConfirmationEmail(data, code) {
     const career = String(data.career || '').trim();
 
     const subject = '¡Inscripción Recibida! · Innovathon Mollendo 2026';
+
+    // Banners con inlineImages (CID) para que Gmail los muestre automáticamente sin bloquearlos
+    let inlineImages = {};
+    let topSrc = 'https://innovathonmollendo.tech/assets/email-banner-top.png';
+    let bottomSrc = 'https://innovathonmollendo.tech/assets/email-banner-bottom.png';
+
+    try {
+      const topBlob = UrlFetchApp.fetch(topSrc).getBlob().setName('bannerTop.png');
+      const bottomBlob = UrlFetchApp.fetch(bottomSrc).getBlob().setName('bannerBottom.png');
+      inlineImages = {
+        bannerTop: topBlob,
+        bannerBottom: bottomBlob,
+      };
+      topSrc = 'cid:bannerTop';
+      bottomSrc = 'cid:bannerBottom';
+    } catch (fetchErr) {
+      console.warn('UrlFetchApp fallback a URLs externas: ' + fetchErr.message);
+    }
+
     const htmlBody = `
 <!DOCTYPE html>
 <html lang="es">
@@ -161,7 +180,7 @@ function sendConfirmationEmail(data, code) {
     
     <!-- Top Hero Banner Oficial (banner_tally_25_oficial.png) -->
     <div style="background-color: #070c20; text-align: center; border-bottom: 1px solid #1b254b; line-height: 0;">
-      <img src="https://innovathonmollendo.tech/assets/email-banner-top.png" alt="Innovathon Mollendo 2026" width="580" border="0" style="width: 100%; max-width: 580px; height: auto; display: block; margin: 0 auto; border: 0;" />
+      <img src="${topSrc}" alt="Innovathon Mollendo 2026" width="580" border="0" style="width: 100%; max-width: 580px; height: auto; display: block; margin: 0 auto; border: 0;" />
     </div>
 
     <!-- Header Section con Badge y Título -->
@@ -177,6 +196,7 @@ function sendConfirmationEmail(data, code) {
       <p style="margin-top: 0; font-size: 15px;">Hola <strong style="color: #ffffff;">${fullName}</strong>,</p>
       <p>Tu postulación para la <strong>Innovathon Mollendo 2026</strong> ha sido enviada y registrada correctamente en nuestro sistema.</p>
 
+      <!-- Ficha de Datos Registrados -->
       <div style="background: #070a18; border: 1px solid #1e295d; border-radius: 14px; padding: 18px; margin: 20px 0;">
         <div style="margin-bottom: 10px;">
           <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8;">DNI</div>
@@ -197,8 +217,22 @@ function sendConfirmationEmail(data, code) {
         </div>
       </div>
 
+      <!-- Pase de Acreditación con Código de Barras (Code 128) -->
+      <div style="background: #070a18; border: 1px dashed #741cf3; border-radius: 14px; padding: 18px; text-align: center; margin: 22px 0;">
+        <div style="font-size: 10px; color: #c4b5fd; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; margin-bottom: 12px;">
+          Pase de Acreditación Presencial
+        </div>
+        <div style="display: inline-block; background: #ffffff; padding: 10px 18px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.4);">
+          <img src="https://bwipjs-api.metafloor.com/?bcid=code128&text=${encodeURIComponent(code)}&scale=2&height=12&includetext" 
+               alt="Código: ${code}" width="280" border="0" style="display: block; max-width: 280px; height: auto;" />
+        </div>
+        <p style="color: #94a3b8; font-size: 11px; margin: 10px 0 0;">
+          Presenta este código en la mesa de ingreso el 17 y 18 de Diciembre.
+        </p>
+      </div>
+
       <p><strong style="color: #ffffff;">¿Qué sigue ahora?</strong><br>
-      El equipo organizador revisará tu postulación y te contactará a este correo electrónico con la confirmación de cupo y los detalles para unirte a la comunidad oficial de participantes.</p>
+      El equipo organizador revisará tu postulación y te contactará a este correo electrónico con los detalles para unirte a la comunidad oficial de participantes.</p>
 
       <div style="text-align: center; margin: 26px 0 10px;">
         <a href="https://innovathonmollendo.tech" style="display: inline-block; background: #cbfb45; color: #070a18; text-decoration: none; font-weight: 800; font-size: 13px; padding: 12px 28px; border-radius: 10px;">
@@ -210,7 +244,7 @@ function sendConfirmationEmail(data, code) {
     <!-- Pie de Correo con Banner Castillo Forga (banner_tally_25_castillo.png) -->
     <div style="background-color: #060a1c; border-top: 1px solid #1b254b;">
       <div style="line-height: 0; text-align: center;">
-        <img src="https://innovathonmollendo.tech/assets/email-banner-bottom.png" alt="Innovathon Mollendo 2026 · Castillo Forga" width="580" border="0" style="width: 100%; max-width: 580px; height: auto; display: block; margin: 0 auto; border: 0;" />
+        <img src="${bottomSrc}" alt="Innovathon Mollendo 2026 · Castillo Forga" width="580" border="0" style="width: 100%; max-width: 580px; height: auto; display: block; margin: 0 auto; border: 0;" />
       </div>
       <div style="text-align: center; padding: 18px 24px 22px;">
         <p style="font-size: 11px; color: #94a3b8; margin: 0 0 6px; font-weight: 500;">
@@ -228,19 +262,26 @@ function sendConfirmationEmail(data, code) {
     `;
 
     const plainText = '¡Hola ' + fullName + '! Tu postulación para Innovathon Mollendo 2026 ha sido recibida con éxito.\n\n' +
+      'Código de Acreditación: ' + code + '\n' +
       'DNI: ' + dni + '\n' +
       'Sede: ' + sede + '\n' +
       (career ? 'Carrera: ' + career + '\n' : '') +
       'Correo registrado: ' + recipient + '\n\n' +
       'Visita la web oficial: https://innovathonmollendo.tech';
 
-    MailApp.sendEmail({
+    const emailOptions = {
       to: recipient,
       subject: subject,
       body: plainText,
       htmlBody: htmlBody,
       name: 'Innovathon Mollendo 2026',
-    });
+    };
+
+    if (Object.keys(inlineImages).length > 0) {
+      emailOptions.inlineImages = inlineImages;
+    }
+
+    MailApp.sendEmail(emailOptions);
 
     console.log('Correo de confirmación enviado exitosamente a ' + recipient + ' con código ' + code);
   } catch (error) {
@@ -342,7 +383,10 @@ function jsonResponse(payload) {
 // Al ejecutarse SIN try/catch, Google detecta la llamada y muestra el diálogo modal de autorización.
 function autorizarPermisos() {
   const miCorreo = Session.getActiveUser().getEmail() || 'fgarambelm@gmail.com';
-  MailApp.sendEmail(miCorreo, 'Autorización exitosa · Innovathon Mollendo 2026', '¡Los permisos de envío de correos han sido autorizados correctamente!');
+  // Provoca la detección de UrlFetchApp para autorizar imágenes embebidas
+  UrlFetchApp.fetch('https://innovathonmollendo.tech/assets/email-banner-top.png');
+  // Provoca la detección de MailApp
+  MailApp.sendEmail(miCorreo, 'Autorización exitosa · Innovathon Mollendo 2026', '¡Los permisos de envío de correos y descarga de imágenes han sido autorizados correctamente!');
   Logger.log('¡Permisos autorizados y correo enviado a ' + miCorreo + '!');
 }
 
