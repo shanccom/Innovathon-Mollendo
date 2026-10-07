@@ -119,42 +119,10 @@ export function Step1PersonalData({ values, errors, onChange, onBlur, onNext }) 
           )}
         </div>
 
-        {/* Correo institucional */}
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="field-institutionalEmail" className="text-xs font-semibold text-slate-300">
-            Correo institucional <span className="text-purple-400">*</span>
-          </label>
-          <div className="relative">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-              <MailIcon className="h-5 w-5 text-slate-500" />
-            </div>
-            <input
-              id="field-institutionalEmail"
-              name="institutionalEmail"
-              type="email"
-              autoComplete="email"
-              placeholder="ejemplo@unsa.edu.pe"
-              value={values.institutionalEmail}
-              onChange={onChange}
-              onBlur={onBlur}
-              className={`w-full rounded-xl border bg-[#0d1633]/70 py-3 pl-11 pr-4 text-sm text-white placeholder-slate-500 outline-none transition focus:ring-2 ${
-                errors.institutionalEmail
-                  ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/20'
-                  : 'border-slate-800 focus:border-[#b8da02] focus:ring-[#b8da02]/20'
-              }`}
-            />
-          </div>
-          {errors.institutionalEmail && (
-            <p id="error-institutionalEmail" role="alert" className="text-xs font-semibold text-rose-400">
-              {errors.institutionalEmail}
-            </p>
-          )}
-        </div>
-
-        {/* Correo personal (opcional) */}
+        {/* Correo personal */}
         <div className="flex flex-col gap-1.5">
           <label htmlFor="field-personalEmail" className="text-xs font-semibold text-slate-300">
-            Correo personal <span className="text-xs font-normal text-slate-400">(opcional)</span>
+            Correo personal <span className="text-purple-400">*</span>
           </label>
           <div className="relative">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
@@ -179,6 +147,38 @@ export function Step1PersonalData({ values, errors, onChange, onBlur, onNext }) 
           {errors.personalEmail && (
             <p id="error-personalEmail" role="alert" className="text-xs font-semibold text-rose-400">
               {errors.personalEmail}
+            </p>
+          )}
+        </div>
+
+        {/* Correo institucional (opcional) */}
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="field-institutionalEmail" className="text-xs font-semibold text-slate-300">
+            Correo institucional <span className="text-xs font-normal text-slate-400">(opcional)</span>
+          </label>
+          <div className="relative">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+              <MailIcon className="h-5 w-5 text-slate-500" />
+            </div>
+            <input
+              id="field-institutionalEmail"
+              name="institutionalEmail"
+              type="email"
+              autoComplete="email"
+              placeholder="ejemplo@unsa.edu.pe"
+              value={values.institutionalEmail}
+              onChange={onChange}
+              onBlur={onBlur}
+              className={`w-full rounded-xl border bg-[#0d1633]/70 py-3 pl-11 pr-4 text-sm text-white placeholder-slate-500 outline-none transition focus:ring-2 ${
+                errors.institutionalEmail
+                  ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/20'
+                  : 'border-slate-800 focus:border-[#b8da02] focus:ring-[#b8da02]/20'
+              }`}
+            />
+          </div>
+          {errors.institutionalEmail && (
+            <p id="error-institutionalEmail" role="alert" className="text-xs font-semibold text-rose-400">
+              {errors.institutionalEmail}
             </p>
           )}
         </div>

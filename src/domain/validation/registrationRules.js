@@ -95,26 +95,26 @@ export const registrationRules = {
     if (!clean) return 'El número de DNI es obligatorio.';
     return DNI_PATTERN.test(clean) ? '' : 'El DNI debe contener exactamente 8 dígitos numéricos.';
   },
+  personalEmail: (value) => {
+    const trimmed = typeof value === 'string' ? value.trim() : '';
+    if (!trimmed) return 'El correo personal es obligatorio.';
+    if (!EMAIL_PATTERN.test(trimmed) || trimmed.includes('..')) {
+      return 'Ingresa un correo electrónico válido (ej. tu_correo@gmail.com).';
+    }
+    return '';
+  },
   institutionalEmail: (value) => {
     const trimmed = typeof value === 'string' ? value.trim() : '';
-    if (!trimmed) return 'El correo institucional es obligatorio.';
-    if (!EMAIL_PATTERN.test(trimmed)) {
+    if (!trimmed) return ''; // Opcional
+    if (!EMAIL_PATTERN.test(trimmed) || trimmed.includes('..')) {
       return 'Ingresa un formato de correo válido (ej. usuario@unsa.edu.pe).';
     }
     const domain = trimmed.split('@')[1]?.toLowerCase() || '';
     if (FREE_PERSONAL_PROVIDERS.includes(domain)) {
-      return 'El correo institucional debe ser de tu universidad o instituto (ej. @unsa.edu.pe o @senati.pe). Para correos de Gmail personales, usa el campo "Correo personal".';
+      return 'El correo institucional debe ser de tu universidad o instituto (ej. @unsa.edu.pe o @senati.pe). Para correos personales, usa el campo "Correo personal".';
     }
     if (!isValidInstitutionalEmail(trimmed)) {
       return 'El correo institucional debe ser educativo o técnico (ej. @unsa.edu.pe, @senati.pe o dominio .edu.pe).';
-    }
-    return '';
-  },
-  personalEmail: (value) => {
-    const trimmed = typeof value === 'string' ? value.trim() : '';
-    if (!trimmed) return ''; // Opcional
-    if (!EMAIL_PATTERN.test(trimmed) || trimmed.includes('..')) {
-      return 'Ingresa un correo electrónico válido.';
     }
     return '';
   },
@@ -172,8 +172,8 @@ export const STEP_FIELDS = {
   1: [
     'fullName',
     'dni',
-    'institutionalEmail',
     'personalEmail',
+    'institutionalEmail',
     'sede',
     'otherSede',
     'career',

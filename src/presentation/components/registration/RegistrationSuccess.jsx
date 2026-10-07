@@ -43,9 +43,19 @@ export function RegistrationSuccess({ receipt, onReset }) {
             <span className="font-semibold text-white">{values.sede}</span>
           </div>
           <div className="col-span-2">
-            <span className="block font-medium text-slate-400">Correo institucional</span>
-            <span className="font-semibold text-[#03c4c5] truncate block">{values.institutionalEmail}</span>
+            <span className="block font-medium text-slate-400">Correo registrado</span>
+            <span className="font-semibold text-[#03c4c5] truncate block">
+              {values.personalEmail || values.institutionalEmail}
+            </span>
           </div>
+          {values.institutionalEmail && values.personalEmail && (
+            <div className="col-span-2">
+              <span className="block font-medium text-slate-400">Correo institucional</span>
+              <span className="font-semibold text-slate-300 truncate block">
+                {values.institutionalEmail}
+              </span>
+            </div>
+          )}
           <div className="col-span-2">
             <span className="block font-medium text-slate-400">Carrera / Especialidad</span>
             <span className="font-semibold text-white">{values.career}</span>
@@ -76,7 +86,7 @@ export function RegistrationSuccess({ receipt, onReset }) {
             ¿Qué sigue ahora?
           </span>
           <p className="text-slate-300 text-xs mt-1 leading-relaxed">
-            El equipo organizador revisará tu postulación y te contactará a tu correo institucional. Ya puedes acceder a los enlaces clave del evento:
+            El equipo organizador revisará tu postulación y te contactará a tu correo registrado. Ya puedes acceder a los enlaces clave del evento:
           </p>
         </div>
 
