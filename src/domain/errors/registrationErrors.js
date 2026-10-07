@@ -14,3 +14,12 @@ export class RegistrationRepositoryError extends Error {
     this.name = 'RegistrationRepositoryError';
   }
 }
+
+// Port-level error raised when the registration already exists (duplicate email or DNI).
+export class RegistrationDuplicateError extends RegistrationRepositoryError {
+  constructor(message = 'Este correo o DNI ya ha sido registrado previamente.') {
+    super(message);
+    this.name = 'RegistrationDuplicateError';
+    this.isDuplicate = true;
+  }
+}

@@ -5,7 +5,10 @@ import {
   validateRegistrationField,
   validateStep,
 } from '../../domain/validation/registrationRules';
-import { RegistrationValidationError } from '../../domain/errors/registrationErrors';
+import {
+  RegistrationValidationError,
+  RegistrationDuplicateError,
+} from '../../domain/errors/registrationErrors';
 import { container } from '../../infrastructure/di/container';
 
 // Form state machine for the 3-step registration wizard.
@@ -119,6 +122,15 @@ export function useRegistrationForm() {
           if (focus) {
             document.getElementById(`field-${focus}`)?.focus();
           }
+          return;
+        }
+
+        if (error instanceof RegistrationDuplicateError || error?.isDuplicate) {
+          setMessage(
+            error.message ||
+              'Este correo o DNI ya ha sido registrado previamente. Tu postulación para la Innovathon Mollendo 2026 ya está recibida y en proceso de revisión.'
+          );
+          setStatus('duplicate');
           return;
         }
 

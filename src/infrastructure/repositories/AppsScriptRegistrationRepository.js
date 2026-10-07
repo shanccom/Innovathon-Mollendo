@@ -1,5 +1,8 @@
 import { RegistrationRepository } from '../../domain/repositories/RegistrationRepository.js';
-import { RegistrationRepositoryError } from '../../domain/errors/registrationErrors.js';
+import {
+  RegistrationRepositoryError,
+  RegistrationDuplicateError,
+} from '../../domain/errors/registrationErrors.js';
 import { assertRegistrationEndpoint, env } from '../config/env.js';
 
 // Adapter that persists registrations into a Google Sheet through an Apps Script web app.
@@ -32,6 +35,11 @@ export class AppsScriptRegistrationRepository extends RegistrationRepository {
     const payload = await parseJson(response);
 
     if (!payload?.success) {
+      if (payload?.isDuplicate) {
+        throw new RegistrationDuplicateError(
+          payload?.error ?? 'Este correo o DNI ya ha sido registrado previamente. Tu postulación ya está recibida.'
+        );
+      }
       throw new RegistrationRepositoryError(payload?.error ?? 'No se pudo completar el registro.');
     }
 
