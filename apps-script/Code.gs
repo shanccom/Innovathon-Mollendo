@@ -54,7 +54,12 @@ const CONFIG = {
 
 // Health check: confirma que el Web App está desplegado y responde.
 function doGet() {
-  return jsonResponse({ success: true, message: 'Innovathon Mollendo · endpoint activo', headers: CONFIG.HEADERS });
+  return jsonResponse({
+    success: true,
+    version: 'v2.2-sin-codigo',
+    message: 'Innovathon Mollendo · endpoint activo',
+    headers: CONFIG.HEADERS,
+  });
 }
 
 // Entrada principal: valida, verifica duplicados, guarda en Google Sheets y envía correo de confirmación.
@@ -156,7 +161,7 @@ function sendConfirmationEmail(data, code) {
     
     <!-- Top Hero Banner Oficial (banner_tally_25_oficial.png) -->
     <div style="background-color: #070c20; text-align: center; border-bottom: 1px solid #1b254b; line-height: 0;">
-      <img src="https://innovathonmollendo.tech/assets/email-banner-top.png" alt="Innovathon Mollendo 2026" style="width: 100%; max-width: 580px; height: auto; display: block;" />
+      <img src="https://innovathonmollendo.tech/assets/email-banner-top.png" alt="Innovathon Mollendo 2026" width="580" border="0" style="width: 100%; max-width: 580px; height: auto; display: block; margin: 0 auto; border: 0;" />
     </div>
 
     <!-- Header Section con Badge y Título -->
@@ -205,7 +210,7 @@ function sendConfirmationEmail(data, code) {
     <!-- Pie de Correo con Banner Castillo Forga (banner_tally_25_castillo.png) -->
     <div style="background-color: #060a1c; border-top: 1px solid #1b254b;">
       <div style="line-height: 0; text-align: center;">
-        <img src="https://innovathonmollendo.tech/assets/email-banner-bottom.png" alt="Innovathon Mollendo 2026 · Castillo Forga" style="width: 100%; max-width: 580px; height: auto; display: block;" />
+        <img src="https://innovathonmollendo.tech/assets/email-banner-bottom.png" alt="Innovathon Mollendo 2026 · Castillo Forga" width="580" border="0" style="width: 100%; max-width: 580px; height: auto; display: block; margin: 0 auto; border: 0;" />
       </div>
       <div style="text-align: center; padding: 18px 24px 22px;">
         <p style="font-size: 11px; color: #94a3b8; margin: 0 0 6px; font-weight: 500;">
