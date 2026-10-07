@@ -43,6 +43,13 @@ curl -X POST "https://script.google.com/macros/s/AKfycb.../exec" \
 
 Los códigos de registro tienen el formato `IM-<año>-<correlativo>` (ej. `IM-2026-0007`).
 
+## 5. Configurar secreto en GitHub Pages (CI/CD)
+
+Para el despliegue automático en producción:
+1. Ve al repositorio en GitHub: **Settings → Secrets and variables → Actions**.
+2. Crea o actualiza el secreto de repositorio **`APPS_SCRIPT_URL`** con la URL del Web App (`/exec`).
+3. El workflow `.github/workflows/deploy.yml` inyectará automáticamente `VITE_APPS_SCRIPT_URL` durante `npm run build`.
+
 ## Notas importantes
 
 - **CORS:** el frontend envía `Content-Type: text/plain` a propósito. Google Apps Script no responde
@@ -54,3 +61,4 @@ Los códigos de registro tienen el formato `IM-<año>-<correlativo>` (ej. `IM-20
   si cambia.
 - **Privacidad:** la hoja debe vivir en el Drive compartido del equipo y solo con acceso para
   responsables de la organización. Nadie más debe tener el enlace de edición.
+
