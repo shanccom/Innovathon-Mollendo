@@ -57,7 +57,7 @@ function doGet() {
   return jsonResponse({ success: true, message: 'Innovathon Mollendo · endpoint activo', headers: CONFIG.HEADERS });
 }
 
-// Entrada principal: valida y agrega una fila por postulación bajo lock para evitar colisiones.
+// Entrada principal: valida, verifica duplicados, guarda en Google Sheets y envía correo de confirmación.
 function doPost(event) {
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
@@ -71,6 +71,18 @@ function doPost(event) {
     }
 
     const sheet = getSheet();
+
+    // Verificación de duplicado por DNI o Correo personal
+    const duplicate = findDuplicate(sheet, data.dni, data.personalEmail);
+    if (duplicate) {
+      return jsonResponse({
+        success: false,
+        isDuplicate: true,
+        registrationId: duplicate.code,
+        error: 'Este correo o DNI ya ha sido registrado previamente. Tu postulación para la Innovathon Mollendo 2026 ya está confirmada y en proceso de revisión por el equipo organizador.',
+      });
+    }
+
     const nextRow = sheet.getLastRow();
     const code = CONFIG.CODE_PREFIX + '-' + new Date().getFullYear() + '-' + String(nextRow).padStart(4, '0');
     const row = [code, new Date()].concat(CONFIG.FIELDS.map((field) => formatValue(data[field])));
@@ -78,11 +90,163 @@ function doPost(event) {
     sheet.appendRow(row);
     SpreadsheetApp.flush();
 
+    // Envío de correo de confirmación (no bloqueante ante posibles cuotas de Google)
+    sendConfirmationEmail(data, code);
+
     return jsonResponse({ success: true, registrationId: code, registeredAt: new Date().toISOString() });
   } catch (error) {
     return jsonResponse({ success: false, error: 'No se pudo guardar la inscripción: ' + error.message });
   } finally {
     lock.releaseLock();
+  }
+}
+
+// Busca si el DNI o el correo personal ya existen en los registros previos de la hoja.
+function findDuplicate(sheet, dni, personalEmail) {
+  const lastRow = sheet.getLastRow();
+  if (lastRow <= 1) return null; // Solo cabeceras
+
+  const cleanDni = String(dni || '').replace(/\D/g, '').trim();
+  const cleanEmail = String(personalEmail || '').trim().toLowerCase();
+
+  // Lee las columnas Código (1), Fecha (2), Nombres (3), DNI (4), Correo inst (5), Correo pers (6)
+  const range = sheet.getRange(2, 1, lastRow - 1, 6);
+  const rows = range.getValues();
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const existingCode = String(row[0] || '').trim();
+    const existingDni = String(row[3] || '').replace(/\D/g, '').trim();
+    const existingInstEmail = String(row[4] || '').trim().toLowerCase();
+    const existingPersEmail = String(row[5] || '').trim().toLowerCase();
+
+    if (cleanDni && existingDni === cleanDni) {
+      return { type: 'dni', code: existingCode };
+    }
+
+    if (cleanEmail && (existingPersEmail === cleanEmail || existingInstEmail === cleanEmail)) {
+      return { type: 'email', code: existingCode };
+    }
+  }
+
+  return null;
+}
+
+// Envía notificación por correo electrónico al participante tras registrarse con éxito.
+function sendConfirmationEmail(data, code) {
+  try {
+    const recipient = String(data.personalEmail || data.institutionalEmail || '').trim();
+    if (!recipient || !recipient.includes('@')) return;
+
+    const fullName = String(data.fullName || 'Participante').trim();
+    const dni = String(data.dni || '').trim();
+    const sede = String(data.sede || 'Mollendo / Islay').trim();
+    const career = String(data.career || '').trim();
+
+    const subject = '¡Inscripción Recibida! · Innovathon Mollendo 2026';
+    const htmlBody = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #070a18; color: #ffffff; margin: 0; padding: 24px 12px;">
+  <div style="max-width: 580px; margin: 0 auto; background: #0a0f26; border: 1px solid #1b254b; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.6);">
+    
+    <!-- Top Hero Banner Oficial (banner_tally_25_oficial.png) -->
+    <div style="background-color: #070c20; text-align: center; border-bottom: 1px solid #1b254b; line-height: 0;">
+      <img src="https://innovathonmollendo.tech/assets/email-banner-top.png" alt="Innovathon Mollendo 2026" style="width: 100%; max-width: 580px; height: auto; display: block;" />
+    </div>
+
+    <!-- Header Section con Badge y Título -->
+    <div style="background: linear-gradient(180deg, rgba(13, 22, 51, 0.9) 0%, rgba(10, 15, 38, 0.95) 100%); padding: 28px 24px 20px; text-align: center; border-bottom: 1px solid #162044;">
+      <span style="display: inline-block; background: rgba(203, 251, 69, 0.12); border: 1px solid rgba(203, 251, 69, 0.35); color: #cbfb45; font-size: 11px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; padding: 6px 14px; border-radius: 9999px;">
+        Postulación Recibida
+      </span>
+      <h1 style="margin: 16px 0 6px; font-size: 26px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">¡Inscripción Exitosa!</h1>
+      <p style="color: #94a3b8; font-size: 13px; margin: 0;">Innovathon Mollendo 2026 · 17 y 18 de Diciembre</p>
+    </div>
+
+    <div style="padding: 28px 24px; color: #cbd5e1; font-size: 14px; line-height: 1.6;">
+      <p style="margin-top: 0; font-size: 15px;">Hola <strong style="color: #ffffff;">${fullName}</strong>,</p>
+      <p>Tu postulación para la <strong>Innovathon Mollendo 2026</strong> ha sido enviada y registrada correctamente en nuestro sistema.</p>
+      
+      <div style="background: rgba(116, 28, 243, 0.15); border: 1px dashed #741cf3; border-radius: 12px; padding: 14px; text-align: center; margin: 20px 0;">
+        <div style="font-size: 11px; color: #c4b5fd; letter-spacing: 1.5px; text-transform: uppercase; font-weight: bold;">Código de Postulación</div>
+        <div style="font-size: 22px; font-weight: 900; color: #cbfb45; letter-spacing: 2px; font-family: monospace; margin-top: 4px;">${code}</div>
+      </div>
+
+      <div style="background: #070a18; border: 1px solid #1e295d; border-radius: 14px; padding: 18px; margin: 20px 0;">
+        <div style="margin-bottom: 10px;">
+          <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8;">DNI</div>
+          <div style="font-size: 13px; font-weight: 600; color: #ffffff;">${dni}</div>
+        </div>
+        <div style="margin-bottom: 10px;">
+          <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8;">Sede</div>
+          <div style="font-size: 13px; font-weight: 600; color: #ffffff;">${sede}</div>
+        </div>
+        ${career ? `
+        <div style="margin-bottom: 10px;">
+          <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8;">Carrera / Especialidad</div>
+          <div style="font-size: 13px; font-weight: 600; color: #ffffff;">${career}</div>
+        </div>` : ''}
+        <div>
+          <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8;">Correo Registrado</div>
+          <div style="font-size: 13px; font-weight: 600; color: #03c4c5;">${recipient}</div>
+        </div>
+      </div>
+
+      <p><strong style="color: #ffffff;">¿Qué sigue ahora?</strong><br>
+      El equipo organizador revisará tu postulación y te contactará a este correo electrónico con la confirmación de cupo y los detalles para unirte a la comunidad oficial de participantes.</p>
+
+      <div style="text-align: center; margin: 26px 0 10px;">
+        <a href="https://innovathonmollendo.tech" style="display: inline-block; background: #cbfb45; color: #070a18; text-decoration: none; font-weight: 800; font-size: 13px; padding: 12px 28px; border-radius: 10px;">
+          Visitar Web Oficial
+        </a>
+      </div>
+    </div>
+
+    <!-- Pie de Correo con Banner Castillo Forga (banner_tally_25_castillo.png) -->
+    <div style="background-color: #060a1c; border-top: 1px solid #1b254b;">
+      <div style="line-height: 0; text-align: center;">
+        <img src="https://innovathonmollendo.tech/assets/email-banner-bottom.png" alt="Innovathon Mollendo 2026 · Castillo Forga" style="width: 100%; max-width: 580px; height: auto; display: block;" />
+      </div>
+      <div style="text-align: center; padding: 18px 24px 22px;">
+        <p style="font-size: 11px; color: #94a3b8; margin: 0 0 6px; font-weight: 500;">
+          <em>«Las ideas también tienen marea»</em>
+        </p>
+        <div style="font-size: 11px; color: #64748b; line-height: 1.5;">
+          Innovathon Mollendo 2026 · Construyendo el futuro de Mollendo e Islay.<br>
+          Este es un correo automático de confirmación de postulación.
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+    `;
+
+    const plainText = '¡Hola ' + fullName + '! Tu postulación para Innovathon Mollendo 2026 ha sido recibida con éxito.\n\n' +
+      'Código de Postulación: ' + code + '\n' +
+      'DNI: ' + dni + '\n' +
+      'Sede: ' + sede + '\n' +
+      (career ? 'Carrera: ' + career + '\n' : '') +
+      'Correo registrado: ' + recipient + '\n\n' +
+      'Visita la web oficial: https://innovathonmollendo.tech';
+
+    MailApp.sendEmail({
+      to: recipient,
+      subject: subject,
+      body: plainText,
+      htmlBody: htmlBody,
+      name: 'Innovathon Mollendo 2026',
+    });
+
+    console.log('Correo de confirmación enviado exitosamente a ' + recipient + ' con código ' + code);
+  } catch (error) {
+    // Si falla el envío (por cuotas diarias o filtros), la inscripción no se detiene.
+    console.error('No se pudo enviar el correo de confirmación: ' + error.message);
   }
 }
 
@@ -114,7 +278,6 @@ function getSheet() {
   return sheet;
 }
 
-
 // Lee el cuerpo JSON enviado por el frontend.
 function readPayload(event) {
   const body = event && event.postData && event.postData.contents;
@@ -133,7 +296,18 @@ function validate(data) {
   if (!data.fullName || String(data.fullName).trim().length < 3) return 'Ingresa tus nombres y apellidos completos.';
   if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]+$/.test(String(data.fullName).trim())) return 'El nombre solo debe contener letras y espacios (sin números).';
   if (!/^\d{8}$/.test(String(data.dni || '').trim())) return 'El DNI debe tener 8 dígitos numéricos.';
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(data.institutionalEmail || '').trim())) return 'El correo institucional no es válido.';
+  
+  // Correo personal obligatorio
+  const personalEmail = String(data.personalEmail || '').trim();
+  if (!personalEmail) return 'El correo personal es obligatorio.';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(personalEmail)) return 'El correo personal no es válido.';
+
+  // Correo institucional opcional
+  const instEmail = String(data.institutionalEmail || '').trim();
+  if (instEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(instEmail)) {
+    return 'El formato del correo institucional no es válido.';
+  }
+
   if (!data.sede) return 'Selecciona una sede o localidad.';
   if (!data.career) return 'Selecciona tu carrera o área.';
   if (!data.skills || String(data.skills).trim().length === 0) return 'Describe tus habilidades principales.';
@@ -164,3 +338,25 @@ function formatValue(value) {
 function jsonResponse(payload) {
   return ContentService.createTextOutput(JSON.stringify(payload)).setMimeType(ContentService.MimeType.JSON);
 }
+
+// Función directa para forzar la ventana emergente de autorización de Google.
+// Al ejecutarse SIN try/catch, Google detecta la llamada y muestra el diálogo modal de autorización.
+function autorizarPermisos() {
+  const miCorreo = Session.getActiveUser().getEmail() || 'fgarambelm@gmail.com';
+  MailApp.sendEmail(miCorreo, 'Autorización exitosa · Innovathon Mollendo 2026', '¡Los permisos de envío de correos han sido autorizados correctamente!');
+  Logger.log('¡Permisos autorizados y correo enviado a ' + miCorreo + '!');
+}
+
+// Función de prueba para enviar el correo completo con diseño HTML y banners.
+function testEmail() {
+  sendConfirmationEmail({
+    fullName: 'Fernando Garambel',
+    personalEmail: 'fgarambelm@gmail.com',
+    dni: '73268408',
+    sede: 'Mollendo / Provincia de Islay',
+    career: 'Tecnología: Ingeniería de Sistemas, Software, Informática y afines'
+  }, 'IM-2026-TEST');
+  Logger.log('Proceso de testEmail finalizado.');
+}
+
+
