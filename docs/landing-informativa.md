@@ -94,15 +94,17 @@ datos correspondientes de la página.
   botones con `aria-expanded`/`aria-controls` y paneles cerrados `inert` y ocultos
   para tecnologías de asistencia. Controles nuevos con altura mínima de 44 px.
 
-El navbar compartido incluye Inicio, El evento, Actividades y Preguntas, junto
+El navbar compartido incluye Inicio, El evento, Actividades, Información y Preguntas, junto
 al botón de inscripción. Reemplaza la barra secundaria de la landing. El menú móvil tiene
 botón de 44 px, nombre en español, estado expandido y Escape con retorno de foco.
 La altura medida del navbar establece el margen de los destinos por ancla.
-La cabecera se simplificó por solicitud del usuario: logo, cuatro enlaces y CTA
+La cabecera se simplificó por solicitud del usuario: logo, cinco enlaces y CTA
 en una sola fila en escritorio. Las demás secciones permanecen en el contenido.
 Inscripción destaca con un botón lima sólido de 56 px, «Inscríbete ahora», con
 flecha circular. En móvil, logo, botón compacto «Inscríbete» y menú también
 comparten una sola fila. La fecha sigue disponible en el Hero y en Información.
+«Información» abre `#informacion`, donde se muestran los datos esenciales,
+las bases y el reglamento, tanto desde Inicio como desde Inscripción.
 
 `RouteTransition.jsx` y `route-transition.css` conectan un layout con Outlet al
 data router de React Router. Los Link de cambio de ruta usan
@@ -130,6 +132,47 @@ prescripciones incompatibles de fonts, paletas, nuevo header, librerías GSAP o
 scroll controlado. No se simulan sorteos, mediciones ni validaciones.
 
 ## Verificaciones ejecutadas
+
+### Castillo interactivo en El evento
+
+La sección «¿Qué es Innovathon Mollendo?» incorpora, debajo de su título, una
+ilustración dimensional del castillo, generada a partir
+de la fotografía de referencia proporcionada por el usuario. Conserva su fachada
+ocre, arcadas, torre y base rocosa. Es una interpretación ilustrada de la
+referencia; no se presenta como fotografía ni modelo arquitectónico exacto.
+
+`CastleConstruction.jsx` ensambla cuatro máscaras complementarias de la misma
+imagen: acantilado, arcadas, fachada superior y torre. WAAPI anima únicamente
+opacidad y desplazamiento, durante 900 ms por pieza con intervalos de 650 ms;
+el conjunto termina en 2,85 segundos. Se inicia una vez al entrar en pantalla,
+después de cargar la imagen. El botón permite repetir la construcción.
+La construcción se pausa al salir de pantalla o al ocultar la pestaña.
+La preferencia de movimiento reducido
+muestra directamente el castillo completo. Se cancelan animaciones, observadores
+y listeners al desmontar; sin WAAPI/IntersectionObserver se conserva la imagen.
+
+El WebP transparente pesa aproximadamente 360 KB y se sirve desde `public/assets/`
+respetando `BASE_URL`, con carga diferida. Las capas comparten el mismo recurso
+en la caché del navegador. El Hero conserva su ilustración original de olas;
+el castillo no aparece en el Hero ni tiene un recuadro.
+
+Con cursor fino, pasar sobre el modelo separa sus cuatro capas con transiciones
+de transform de 400 ms; al salir se ensamblan de nuevo. La construcción inicial
+y la interacción usan contenedores diferentes para evitar competir por la misma
+transformación. Los controles «Separar capas»/«Unir capas» ofrecen la misma
+exploración en móvil y teclado, con `aria-pressed`. «Reconstruir» repite la entrada.
+Se reserva espacio para la torre elevada y la base desplazada. Teclado y movimiento
+reducido cambian el estado de las capas inmediatamente, sin transición.
+
+Verificación específica: lint y build pasan; inspección de la composición a
+320/768/1024/1440 px sin overflow horizontal, construcción y repetición observadas
+en navegador; hover de separación y retorno, estados del botón y teclado comprobados.
+Consola sin errores ni advertencias. Un harness del efecto
+real verifica duración, carga diferida, repetición, visibilidad, preferencia
+reducida y limpieza. No se modificó la preferencia del sistema operativo ni se
+realizó una prueba en dispositivo físico.
+
+### Landing y navegación
 
 - `npm run lint`: pasó.
 - `npm run build`: pasó (Vite); sin script de typecheck en este proyecto JavaScript.

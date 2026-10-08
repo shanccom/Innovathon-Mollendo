@@ -13,6 +13,13 @@ conectado a una hoja de cálculo en un Drive compartido.
 
 ![Hero de Innovathon Mollendo con navegación e ilustración animada](docs/images/hero.png)
 
+## Castillo interactivo
+
+En «El evento», el castillo se construye por etapas y sus capas se separan al
+pasar el cursor. También se puede explorar con los botones o el teclado.
+
+![Castillo de Mollendo con sus capas separadas en la sección del evento](docs/images/castillo-interactivo.jpg)
+
 ## Estructura
 
 Clean Architecture: las dependencias apuntan hacia el dominio y cada capa se puede

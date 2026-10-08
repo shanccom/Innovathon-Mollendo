@@ -6,6 +6,7 @@ import { useSeo } from '../hooks/useSeo';
 import { useLandingMotion } from '../hooks/useLandingMotion';
 import { RegistrationNavbar } from '../components/registration/RegistrationNavbar';
 import { TideScene } from '../components/landing/TideScene';
+import { CastleConstruction } from '../components/landing/CastleConstruction';
 import { EventFaq } from '../components/landing/EventFaq';
 import {
   SingleWave, ArrowRightIcon, CalendarIcon, MapPinIcon, CodeIcon,
@@ -70,7 +71,7 @@ export default function HomePage() {
         </section>
 
         <section id="evento" className="landing-section landing-container landing-about" aria-labelledby="about-title">
-          <div data-reveal><h2 id="about-title">¿Qué es<br />Innovathon Mollendo?</h2><SingleWave className="landing-about__wave" /></div>
+          <div className="landing-about__visual"><div data-reveal><h2 id="about-title">¿Qué es<br />Innovathon Mollendo?</h2><SingleWave className="landing-about__wave" /></div><CastleConstruction /></div>
           <div className="landing-about__body" data-reveal><p className="landing-lead">El futuro de nuestra ciudad también se construye desde aquí.</p><p>{LANDING.summary}</p><p>Conectamos distintas formas de pensar para abordar desafíos de nuestra comunidad. El mar, la historia portuaria y el talento local son el punto de partida.</p><div className="landing-about__signature"><span>Una ciudad.</span><span>Muchas perspectivas.</span><strong>Una marea de ideas.</strong></div></div>
         </section>
 

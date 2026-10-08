@@ -7,7 +7,8 @@ import './event-navigation.css';
 
 const SECTIONS = [
   ['inicio', 'Inicio'], ['evento', 'El evento'],
-  ['actividades', 'Actividades'], ['preguntas', 'Preguntas'],
+  ['actividades', 'Actividades'], ['informacion', 'Información'],
+  ['preguntas', 'Preguntas'],
 ];
 
 export function RegistrationNavbar() {
