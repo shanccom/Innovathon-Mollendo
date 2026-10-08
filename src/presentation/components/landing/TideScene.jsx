@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef } from 'react';
 
 const CONTOURS = Array.from({ length: 22 }, (_, index) => Array.from({ length: 85 }, (_, point) => {
   const x = point * 18 - 260;
@@ -14,7 +14,6 @@ const NODES = [
 ];
 
 export function TideScene() {
-  const [paused, setPaused] = useState(false);
   const sceneRef = useRef(null);
   const artworkId = useId().replace(/:/g, '');
   useEffect(() => {
@@ -25,7 +24,7 @@ export function TideScene() {
     let bounds;
     const enter = () => { bounds = scene.getBoundingClientRect(); };
     const move = (event) => {
-      if (!pointer.matches || reduced.matches || paused || !bounds) return;
+      if (!pointer.matches || reduced.matches || !bounds) return;
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
         const x = Math.max(-0.5, Math.min(0.5, (event.clientX - bounds.left) / bounds.width - 0.5));
@@ -52,10 +51,10 @@ export function TideScene() {
       scene.removeEventListener('pointerleave', reset);
       reduced.removeEventListener('change', reset);
     };
-  }, [paused]);
+  }, []);
 
   return (
-    <div className="tide-scene" ref={sceneRef} data-tide-scene data-running="false" data-paused={paused}>
+    <div className="tide-scene" ref={sceneRef} data-tide-scene data-running="false">
       <div className="tide-scene__art" aria-hidden="true">
         <svg viewBox="0 0 840 620" fill="none" className="tide-scene__svg">
           <defs>
@@ -86,7 +85,7 @@ export function TideScene() {
           <circle cx="470" cy="277" r="5" className="tide-node__core" />
         </svg>
       </div>
-      <div className="tide-scene__caption"><span>Las ideas también tienen marea.</span><button type="button" aria-pressed={paused} onClick={() => setPaused((value) => !value)} className="tide-motion-control"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true">{paused ? <path d="M5 3L12 8L5 13V3Z" fill="currentColor" /> : <path d="M5 3V13M11 3V13" stroke="currentColor" strokeWidth="2" />}</svg><span>{paused ? 'Reanudar' : 'Pausar'} movimiento</span></button></div>
+      <div className="tide-scene__caption"><span>Las ideas también tienen marea.</span></div>
     </div>
   );
 }
