@@ -6,6 +6,7 @@ import { INNOVATHON_CHALLENGES } from '../../domain/entities/registrationCatalog
 export const LANDING = {
   date: EVENT.date,
   summary: EVENT.summary,
+  socials: EVENT.socials,
   documents: EVENT.documents,
   challenges: INNOVATHON_CHALLENGES.filter((challenge) => challenge.startsWith('Reto '))
     .map((challenge) => challenge.replace(/^Reto \d: /, '')),

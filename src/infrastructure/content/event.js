@@ -50,6 +50,7 @@ export const EVENT = {
     { step: '07', title: 'Premiación y cierre', description: 'Reconocimiento a los proyectos más innovadores y networking frente al mar.' },
   ],
   socials: {
+    whatsapp: 'https://chat.whatsapp.com/LbXxbFYZbzU6yrLfFdBYjA',
     instagram: 'https://instagram.com/innovathonmollendo',
     facebook: 'https://facebook.com/innovathonmollendo',
     linkedin: 'https://linkedin.com/company/innovathon-mollendo',

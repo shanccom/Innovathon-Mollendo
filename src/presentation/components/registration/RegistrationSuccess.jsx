@@ -5,6 +5,7 @@ import {
   BookOpenIcon,
   ScaleIcon,
   ExternalLinkIcon,
+  WhatsAppIcon,
 } from './RegistrationIcons';
 
 // Confirmation screen shown after a successful submission.
@@ -86,9 +87,26 @@ export function RegistrationSuccess({ receipt, onReset }) {
             ¿Qué sigue ahora?
           </span>
           <p className="text-slate-300 text-xs mt-1 leading-relaxed">
-            El equipo organizador revisará tu postulación y te contactará a tu correo registrado. Ya puedes acceder a los enlaces clave del evento:
+            El equipo organizador revisará tu postulación y te contactará a tu correo registrado. Únete al grupo oficial y accede a los enlaces clave del evento:
           </p>
         </div>
+
+        {/* CTA Grupo Oficial de WhatsApp */}
+        <a
+          href={EVENT.socials.whatsapp}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-between gap-3 w-full rounded-xl bg-[#25D366] px-4 py-3.5 text-xs sm:text-sm font-extrabold text-[#050814] shadow-[0_0_20px_rgba(37,211,102,0.3)] transition-all hover:bg-[#20ba5a] hover:shadow-[0_0_25px_rgba(37,211,102,0.45)] active:scale-[0.98] group cursor-pointer"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <WhatsAppIcon className="h-6 w-6 text-[#050814] shrink-0" />
+            <div className="text-left min-w-0">
+              <span className="block font-black leading-tight text-[#050814] text-sm">Unirme al Grupo de WhatsApp</span>
+              <span className="block text-[11px] font-semibold text-[#050814]/85">Comunidad oficial y avisos en tiempo real</span>
+            </div>
+          </div>
+          <ExternalLinkIcon className="h-4 w-4 text-[#050814] shrink-0 transition-transform group-hover:translate-x-0.5" />
+        </a>
 
         {/* CTA Enlaces Importantes Google Doc */}
         <a

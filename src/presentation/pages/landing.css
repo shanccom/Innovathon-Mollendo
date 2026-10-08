@@ -205,11 +205,16 @@
 .landing-closing h2 { font-size: clamp(2.125rem, 5vw, 4.5rem); }
 .landing-closing h2 span { color: var(--landing-lime); }
 .landing-closing p { color: var(--landing-muted); max-width: 49ch; margin: 24px auto 32px; }
+.landing-closing__actions { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 16px; }
+.landing-button--whatsapp { background: #25d366; color: #070a18; }
+.landing-button--whatsapp .landing-button__arrow { background: #070a18; color: #25d366; padding: 7px; }
 .landing-closing .landing-text-link { display: flex; width: fit-content; margin: 16px auto 0; }
 .landing-closing__tides { position: absolute; left: 0; right: 0; bottom: -50px; width: 100%; height: 180px; stroke: var(--landing-purple-light); stroke-width: 1; opacity: .3; pointer-events: none; }
 .landing-footer { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; padding-block: 24px max(24px, env(safe-area-inset-bottom)); }
 .landing-footer p { display: flex; align-items: center; gap: 12px; font-size: .75rem; letter-spacing: .12em; font-weight: 600; color: var(--landing-muted); }
 .landing-footer .landing-small-icon { color: var(--landing-purple-light); }
+.landing-footer__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; }
+.landing-footer__wa { color: #25d366 !important; font-weight: 600; }
 .landing-footer .landing-text-link { color: var(--landing-muted); font-size: .8125rem; }
 .landing-footer .landing-small-arrow { transform: rotate(-90deg); }
 

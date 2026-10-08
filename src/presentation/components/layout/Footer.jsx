@@ -61,8 +61,18 @@ export function Footer() {
         </div>
 
         <div className="min-w-0">
-          <h2 className="text-xs font-bold uppercase tracking-widest text-aqua-400">Contacto</h2>
+          <h2 className="text-xs font-bold uppercase tracking-widest text-aqua-400">Contacto y Comunidad</h2>
           <ul className="mt-4 space-y-2 text-sm text-sand-200/80">
+            <li>
+              <a
+                className="hover:text-aqua-400 inline-flex items-center gap-1 text-emerald-400 font-semibold"
+                href={EVENT.socials.whatsapp}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <span>Comunidad WhatsApp</span> ↗
+              </a>
+            </li>
             <li>
               <a className="hover:text-aqua-400" href={`mailto:${EVENT.socials.email}`}>
                 {EVENT.socials.email}

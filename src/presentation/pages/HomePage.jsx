@@ -11,7 +11,7 @@ import { EventFaq } from '../components/landing/EventFaq';
 import {
   SingleWave, ArrowRightIcon, CalendarIcon, MapPinIcon, CodeIcon,
   CompassIcon, UsersIcon, CheckIcon, ExternalLinkIcon, BookOpenIcon, ScaleIcon,
-  CornerBracket, DotMatrix,
+  CornerBracket, DotMatrix, WhatsAppIcon,
 } from '../components/registration/RegistrationIcons';
 import './landing.css';
 
@@ -115,9 +115,43 @@ export default function HomePage() {
 
         <section id="preguntas" className="landing-section landing-container landing-faq-section" aria-labelledby="faq-title"><div data-reveal><h2 id="faq-title">Preguntas<br />frecuentes.</h2><p>Resuelve tus dudas antes de postular.</p><SingleWave className="landing-about__wave" /></div><EventFaq items={LANDING.faq} /></section>
 
-        <section id="postular" className="landing-closing" aria-labelledby="closing-title"><div className="landing-container" data-reveal><SingleWave className="landing-closing__wave" /><h2 id="closing-title">Las grandes ideas<br />comienzan con<br /><span>una pequeña ola.</span></h2><p>Tu perspectiva puede ser el comienzo de algo que transforme Mollendo.</p><Link to={ROUTES.registration} viewTransition className="landing-button landing-button--primary">Quiero postular <ArrowRightIcon className="landing-button__arrow" /></Link><a href="#informacion" className="landing-text-link">Revisar la información del evento</a></div><svg className="landing-closing__tides" viewBox="0 0 1440 240" fill="none" preserveAspectRatio="none" aria-hidden="true">{[0, 1, 2, 3, 4, 5, 6].map((line) => <path key={line} d={`M-40 ${80 + line * 20}C280 ${-150 + line * 20} 820 ${360 + line * 20} 1500 ${20 + line * 20}`} />)}</svg></section>
+        <section id="postular" className="landing-closing" aria-labelledby="closing-title">
+          <div className="landing-container" data-reveal>
+            <SingleWave className="landing-closing__wave" />
+            <h2 id="closing-title">Las grandes ideas<br />comienzan con<br /><span>una pequeña ola.</span></h2>
+            <p>Tu perspectiva puede ser el comienzo de algo que transforme Mollendo.</p>
+            <div className="landing-closing__actions">
+              <Link to={ROUTES.registration} viewTransition className="landing-button landing-button--primary">
+                Quiero postular <ArrowRightIcon className="landing-button__arrow" />
+              </Link>
+              <a
+                href={LANDING.socials?.whatsapp || 'https://chat.whatsapp.com/LbXxbFYZbzU6yrLfFdBYjA'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="landing-button landing-button--whatsapp"
+              >
+                Comunidad WhatsApp <WhatsAppIcon className="landing-button__arrow" />
+              </a>
+            </div>
+            <a href="#informacion" className="landing-text-link">Revisar la información del evento</a>
+          </div>
+          <svg className="landing-closing__tides" viewBox="0 0 1440 240" fill="none" preserveAspectRatio="none" aria-hidden="true">{[0, 1, 2, 3, 4, 5, 6].map((line) => <path key={line} d={`M-40 ${80 + line * 20}C280 ${-150 + line * 20} 820 ${360 + line * 20} 1500 ${20 + line * 20}`} />)}</svg>
+        </section>
       </main>
-      <footer className="landing-footer landing-container"><p><SingleWave className="landing-small-icon" /> INNOVATHON MOLLENDO 2026</p><a href="#contenido" className="landing-text-link">Volver al inicio <ArrowRightIcon className="landing-small-arrow" /></a></footer>
+      <footer className="landing-footer landing-container">
+        <p><SingleWave className="landing-small-icon" /> INNOVATHON MOLLENDO 2026</p>
+        <div className="landing-footer__actions">
+          <a
+            href={LANDING.socials?.whatsapp || 'https://chat.whatsapp.com/LbXxbFYZbzU6yrLfFdBYjA'}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="landing-text-link landing-footer__wa"
+          >
+            Comunidad WhatsApp ↗
+          </a>
+          <a href="#contenido" className="landing-text-link">Volver al inicio <ArrowRightIcon className="landing-small-arrow" /></a>
+        </div>
+      </footer>
     </div>
   );
 }
