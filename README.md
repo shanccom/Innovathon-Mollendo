@@ -9,6 +9,10 @@ conectado a una hoja de cálculo en un Drive compartido.
 - **Rutas:** `/` (evento) · `/registro` (inscripción)
 - **Stack:** React 19 · Vite 8 · Tailwind CSS 4 · React Router 7 · JavaScript
 
+## Vista del Hero
+
+![Hero de Innovathon Mollendo con navegación e ilustración animada](docs/images/hero.png)
+
 ## Estructura
 
 Clean Architecture: las dependencias apuntan hacia el dominio y cada capa se puede

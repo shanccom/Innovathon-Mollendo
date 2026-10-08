@@ -23,7 +23,7 @@ export default function RegistrationPage() {
   });
 
   return (
-    <div className="registration-scope relative min-h-screen overflow-x-hidden bg-[#070a18] text-white flex flex-col justify-between selection:bg-[#b8da02] selection:text-[#050814]">
+    <div className="registration-scope relative min-h-screen overflow-x-clip bg-[#070a18] text-white flex flex-col justify-between selection:bg-[#b8da02] selection:text-[#050814]">
       {/* ----------------- GEOMETRIC BACKGROUND GRAPHICS (ADAPTIVE BY STEP) ----------------- */}
       {isStep1 ? (
         <>

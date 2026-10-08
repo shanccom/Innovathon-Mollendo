@@ -1,22 +1,22 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from 'react-router-dom';
 import MainLayout from '../presentation/layouts/MainLayout';
 import HomePage from '../presentation/pages/HomePage';
 import RegistrationPage from '../presentation/pages/RegistrationPage';
 import NotFoundPage from '../presentation/pages/NotFoundPage';
 import { ROUTES } from '../shared/constants/routes';
+import RouteTransition from '../presentation/layouts/RouteTransition';
 
-// Application root: routing and layout composition only.
+// Data routing enables native view transitions; BASE_URL preserves subpath hosting.
+const router = createBrowserRouter(createRoutesFromElements(
+  <Route element={<RouteTransition />}>
+    <Route path={ROUTES.home} element={<HomePage />} />
+    <Route path={ROUTES.registration} element={<RegistrationPage />} />
+    <Route element={<MainLayout />}>
+      <Route path="*" element={<NotFoundPage />} />
+    </Route>
+  </Route>
+), { basename: import.meta.env.BASE_URL });
+
 export default function App() {
-  // BASE_URL keeps routes working both on the project site and on the custom domain.
-  return (
-    <BrowserRouter basename={import.meta.env.BASE_URL}>
-      <Routes>
-        <Route path={ROUTES.home} element={<HomePage />} />
-        <Route path={ROUTES.registration} element={<RegistrationPage />} />
-        <Route element={<MainLayout />}>
-          <Route path="*" element={<NotFoundPage />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
-  );
+  return <RouterProvider router={router} />;
 }

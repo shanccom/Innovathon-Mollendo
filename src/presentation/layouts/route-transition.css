@@ -1,0 +1,10 @@
+.route-surface { background: #070a18; min-height: 100dvh; }
+::view-transition { pointer-events: none; }
+::view-transition-old(root) { animation: event-page-out 180ms cubic-bezier(.23, 1, .32, 1) both; }
+::view-transition-new(root) { animation: event-page-in 280ms cubic-bezier(.23, 1, .32, 1) both; }
+::view-transition-group(event-navigation) { animation-duration: 280ms; animation-timing-function: cubic-bezier(.23, 1, .32, 1); }
+@keyframes event-page-out { to { opacity: 0; transform: translateY(-8px); } }
+@keyframes event-page-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}
