@@ -6,6 +6,7 @@ export function createEmptyRegistration() {
     // Paso 1: Datos Personales y Académicos
     fullName: '',
     dni: '',
+    phone: '',
     institutionalEmail: '',
     personalEmail: '',
     sede: '',
@@ -40,6 +41,7 @@ export function createRegistration(input = {}) {
   return {
     fullName: cleanText(input.fullName),
     dni: cleanDigits(input.dni),
+    phone: cleanText(input.phone),
     institutionalEmail: cleanText(input.institutionalEmail).toLowerCase(),
     personalEmail: cleanText(input.personalEmail).toLowerCase(),
     sede: cleanText(input.sede),
@@ -54,8 +56,8 @@ export function createRegistration(input = {}) {
     challengeInterest: cleanText(input.challengeInterest),
     referencePerson: cleanText(input.referencePerson),
     portfolioUrl: cleanText(input.portfolioUrl),
-    availability: Boolean(input.availability),
-    termsAccepted: Boolean(input.termsAccepted),
+    availability: input.availability === true,
+    termsAccepted: input.termsAccepted === true,
   };
 }
 

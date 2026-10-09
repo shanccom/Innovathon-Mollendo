@@ -26,4 +26,8 @@ export default [
     files: ['*.config.js'],
     languageOptions: { globals: { ...globals.node } },
   },
+  {
+    files: ['tests/k6/*.js'],
+    languageOptions: { globals: { __ENV: 'readonly', __VU: 'readonly', __ITER: 'readonly' } },
+  },
 ];

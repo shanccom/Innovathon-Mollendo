@@ -53,6 +53,9 @@ npm run dev                  # http://localhost:5173
 | `npm run build` | Build de producción en `dist/`. |
 | `npm run preview` | Sirve `dist/` localmente. |
 | `npm run lint` | ESLint (reglas de React Hooks incluidas). |
+| `npm test` | Regresión del formulario y Apps Script, incluidos workers concurrentes. |
+| `npm run test:e2e` | E2E de escritorio y móvil con Playwright y backend aislado. |
+| `npm run test:load` | k6: 104 envíos al backend local aislado (requiere k6 instalado). |
 
 ## Formulario de inscripción
 
@@ -64,8 +67,13 @@ VITE_APPS_SCRIPT_URL=https://script.google.com/macros/s/AKfycb.../exec
 ```
 
 - Configura el script paso a paso: [`docs/apps-script-setup.md`](docs/apps-script-setup.md).
-- Si la variable no está definida, la app usa un repositorio *fake* que guarda en
-  `localStorage`, útil para desarrollar sin backend.
+- En desarrollo, sin la variable, la app usa un repositorio *fake* en `localStorage`.
+  En producción requiere el endpoint real y comprueba que soporte celular obligatorio
+  y detección atómica de duplicados antes de enviar.
+- Celular peruano obligatorio: 9 dígitos, comenzando por 9. El compañero de equipo es opcional.
+- El backend bloquea registros repetidos por DNI o cualquiera de los dos correos;
+  reconoce variantes de Gmail con puntos, `+alias` y `googlemail.com`.
+- Resultados, alcance y pruebas reproducibles: [`docs/pruebas-finales.md`](docs/pruebas-finales.md).
 
 El código que ve el participante tiene el formato `IM-<año>-<correlativo>`.
 
@@ -76,7 +84,8 @@ esos archivos es suficiente para actualizar la landing; no hay que tocar compone
 
 ## GitHub Pages
 
-Despliegue automático a `main` con `.github/workflows/deploy.yml` (lint + build + publish).
+Despliegue automático a `main` con `.github/workflows/deploy.yml` (lint + regresión + E2E + build + publish).
+Apps Script se actualiza por separado: el push publica el frontend, no el backend de Google.
 Para el dominio propio hay que crear la variable `VITE_BASE_PATH=/` en
 **Settings → Secrets and variables → Actions**.
 

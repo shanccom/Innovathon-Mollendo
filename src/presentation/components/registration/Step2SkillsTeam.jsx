@@ -221,10 +221,10 @@ export function Step2SkillsTeam({
           </div>
         </div>
 
-        {/* Compañero o Docente de referencia */}
+        {/* Compañero de equipo */}
         <div className="flex flex-col gap-1.5">
           <label htmlFor="field-referencePerson" className="text-xs font-semibold text-slate-300">
-            Compañero/a de equipo o Docente de referencia <span className="text-xs font-normal text-slate-400">(opcional)</span>
+            Compañero de equipo <span className="text-xs font-normal text-slate-400">(opcional)</span>
           </label>
           <div className="relative">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
@@ -234,7 +234,7 @@ export function Step2SkillsTeam({
               id="field-referencePerson"
               name="referencePerson"
               type="text"
-              placeholder="Si postulas con un compañero/a o recomendado por un docente, escribe sus nombres y apellidos completos"
+              placeholder="Nombres y apellidos de tu compañero"
               value={values.referencePerson || ''}
               onChange={onChange}
               onBlur={onBlur}

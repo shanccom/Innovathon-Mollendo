@@ -12,7 +12,11 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "test": "node --test tests/*.test.mjs",
+    "test:e2e": "node scripts/run-e2e-test.mjs",
+    "test:api": "node scripts/qa-api-server.mjs",
+    "test:load": "node scripts/run-load-test.mjs"
   },
   "dependencies": {
     "react": "^19.3.0",

@@ -1,9 +1,11 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { createEmptyRegistration } from '../../domain/entities/Registration';
 import {
   getFirstInvalidField,
   validateRegistrationField,
   validateStep,
+  validateRegistration,
+  STEP_FIELDS,
 } from '../../domain/validation/registrationRules';
 import {
   RegistrationValidationError,
@@ -19,6 +21,15 @@ export function useRegistrationForm() {
   const [status, setStatus] = useState('idle');
   const [message, setMessage] = useState('');
   const [receipt, setReceipt] = useState(null);
+  const submitting = useRef(false);
+
+  const showErrors = useCallback((fieldErrors) => {
+    setErrors(fieldErrors);
+    const first = getFirstInvalidField(fieldErrors);
+    const invalidStep = Object.entries(STEP_FIELDS).find(([, fields]) => fields.includes(first));
+    if (invalidStep) setStep(Number(invalidStep[0]));
+    requestAnimationFrame(() => document.getElementById(`field-${first}`)?.focus());
+  }, []);
 
   const handleChange = useCallback((event) => {
     const { name, value, type, checked } = event.target;
@@ -52,6 +63,7 @@ export function useRegistrationForm() {
   }, []);
 
   const nextStep = useCallback(() => {
+    if (submitting.current) return false;
     const stepErrors = validateStep(step, values);
     if (Object.keys(stepErrors).length > 0) {
       setErrors((prev) => ({ ...prev, ...stepErrors }));
@@ -69,45 +81,46 @@ export function useRegistrationForm() {
   }, [step, values]);
 
   const prevStep = useCallback(() => {
+    if (submitting.current) return;
     setErrors({});
     setStep((current) => Math.max(current - 1, 1));
     window.scrollTo({ top: 120, behavior: 'smooth' });
   }, []);
 
   const goToStep = useCallback((targetStep) => {
-    if (targetStep < 1 || targetStep > 3) return;
+    if (submitting.current || targetStep < 1 || targetStep > 3) return;
     // Allow going backwards freely; validate current if going forward
     if (targetStep < step) {
       setErrors({});
       setStep(targetStep);
       window.scrollTo({ top: 120, behavior: 'smooth' });
     } else if (targetStep > step) {
-      const stepErrors = validateStep(step, values);
+      const stepErrors = {};
+      for (let current = 1; current < targetStep; current++) {
+        Object.assign(stepErrors, validateStep(current, values));
+      }
       if (Object.keys(stepErrors).length === 0) {
         setStep(targetStep);
         window.scrollTo({ top: 120, behavior: 'smooth' });
       } else {
-        setErrors((prev) => ({ ...prev, ...stepErrors }));
+        showErrors(stepErrors);
       }
     }
-  }, [step, values]);
+  }, [step, values, showErrors]);
 
   const handleSubmit = useCallback(
     async (event) => {
       if (event) event.preventDefault();
+      if (submitting.current) return;
       setMessage('');
 
-      // Validate Step 3 first
-      const step3Errors = validateStep(3, values);
-      if (Object.keys(step3Errors).length > 0) {
-        setErrors((prev) => ({ ...prev, ...step3Errors }));
-        const firstInvalid = getFirstInvalidField(step3Errors);
-        if (firstInvalid) {
-          document.getElementById(`field-${firstInvalid}`)?.focus();
-        }
+      const formErrors = validateRegistration(values);
+      if (Object.keys(formErrors).length > 0) {
+        showErrors(formErrors);
         return;
       }
 
+      submitting.current = true;
       setStatus('submitting');
 
       try {
@@ -116,12 +129,9 @@ export function useRegistrationForm() {
         setStatus('success');
       } catch (error) {
         if (error instanceof RegistrationValidationError) {
-          const { focus, ...fieldErrors } = error.fieldErrors;
-          setErrors(fieldErrors);
+          const fieldErrors = Object.fromEntries(Object.entries(error.fieldErrors).filter(([key]) => key !== 'focus'));
+          showErrors(fieldErrors);
           setStatus('idle');
-          if (focus) {
-            document.getElementById(`field-${focus}`)?.focus();
-          }
           return;
         }
 
@@ -136,9 +146,11 @@ export function useRegistrationForm() {
 
         setMessage(error.message ?? 'No pudimos completar tu registro. Inténtalo nuevamente.');
         setStatus('error');
+      } finally {
+        submitting.current = false;
       }
     },
-    [values],
+    [values, showErrors],
   );
 
   const reset = useCallback(() => {

@@ -7,7 +7,7 @@
 3. Espera el primer deploy y abre
    `https://shanccom.github.io/Innovathon-Mollendo/`.
 
-El workflow ejecuta `npm ci`, `npm run lint`, `npm run build` y publica `dist/`.
+El workflow ejecuta `npm ci`, lint, regresión y E2E, compila y publica `dist/`.
 
 ## Conectar el dominio `innovathonmollendo.tech`
 
@@ -41,8 +41,11 @@ tipo `innovathonmollendo.tech/Innovathon-Mollendo/`.
    [`apps-script-setup.md`](./apps-script-setup.md)).
 2. Cada build inyecta ese valor en `VITE_APPS_SCRIPT_URL`, así que **nunca** queda en el
    repositorio.
-3. Si el secreto no existe, el build igual termina y la web usa el repositorio *fake*
-   (los registros se guardan en el `localStorage` del navegador).
+3. Si el secreto no existe, el formulario muestra que las inscripciones no están disponibles;
+   producción nunca confirma registros guardados solo en el navegador.
+4. Despliega primero `apps-script/Code.gs` y su manifiesto. El frontend exige las capacidades
+   `phone` y `atomicDuplicates` del health check; una implementación anterior muestra
+   «Las inscripciones se están actualizando» y evita escribir datos incompletos.
 
 ## Variables de entorno
 
@@ -51,4 +54,4 @@ tipo `innovathonmollendo.tech/Innovathon-Mollendo/`.
 | `VITE_BASE_PATH` | Actions (variable) o `.env.local` | Subruta de publicación: `/Innovathon-Mollendo/` o `/`. |
 | `VITE_SITE_URL` | Actions (variable) o `.env.local` | Canonical y Open Graph. |
 | `VITE_APPS_SCRIPT_URL` | Actions (**secreto**) o `.env.local` | Web App de Google Apps Script. |
-| `VITE_USE_FAKE_REGISTRATION` | `.env.local` | `true` fuerza el repositorio local. |
+| `VITE_USE_FAKE_REGISTRATION` | `.env.local` | `true` fuerza el repositorio local solo en desarrollo. |

@@ -11,7 +11,7 @@ export const LANDING = {
   challenges: INNOVATHON_CHALLENGES.filter((challenge) => challenge.startsWith('Reto '))
     .map((challenge) => challenge.replace(/^Reto \d: /, '')),
   journey: [
-    { title: 'Presenta tu postulación', description: 'Completa el formulario con tu perfil, tus áreas de aporte y el reto que te interesa. Puedes indicar un compañero o docente de referencia.', detail: 'Postulación gratuita' },
+    { title: 'Presenta tu postulación', description: 'Completa el formulario con tu perfil, tus áreas de aporte y el reto que te interesa. Puedes indicar un compañero de equipo.', detail: 'Postulación gratuita' },
     { title: 'Revisión del comité', description: 'La solicitud está sujeta a la verificación de cupos y perfil por el comité organizador. Postular no equivale a una plaza confirmada.', detail: 'Según los términos de participación' },
     { title: 'Nos encontramos en Mollendo', description: 'El 17 y 18 de diciembre de 2026, participa presencialmente con tu laptop y accesorios para trabajar en soluciones para la región.', detail: '17 y 18 de diciembre' },
   ],
@@ -32,7 +32,7 @@ export const LANDING = {
     { id: 'fechas', question: '¿Cuándo y dónde será?', answer: `El evento será presencial el ${EVENT.date} en ${EVENT.city}. La sede exacta y los horarios están pendientes de confirmación.` },
     { id: 'costo', question: '¿La postulación tiene un costo?', answer: 'No. La postulación es libre y gratuita. Completar el formulario constituye una solicitud sujeta a verificación de cupos y perfil por el comité organizador.' },
     { id: 'perfil', question: '¿Qué perfiles pueden aportar?', answer: 'El formulario contempla desarrollo de software, diseño y prototipado, negocios y marketing, hardware e IoT, conocimiento de la realidad local, gestión y liderazgo. Revisa las bases para conocer los criterios de participación.' },
-    { id: 'equipo', question: '¿Debo indicar un compañero o docente?', answer: 'Es opcional. El formulario recoge tus datos personales y permite indicar un compañero de equipo o docente de referencia. Consulta en las bases las condiciones de conformación de equipos.' },
+    { id: 'equipo', question: '¿Debo indicar un compañero?', answer: 'Es opcional. El formulario recoge tus datos personales y permite indicar un compañero de equipo. Consulta en las bases las condiciones de conformación de equipos.' },
     { id: 'llevar', question: '¿Qué necesito para asistir?', answer: 'Debes confirmar tu disponibilidad presencial para el 17 y 18 de diciembre de 2026 y acudir con tu laptop y accesorios. Revisa los términos y documentos antes de completar tu postulación.' },
     { id: 'bases', question: '¿Dónde puedo consultar las bases y el reglamento?', answer: 'Encontrarás los enlaces a las bases del evento y al reglamento en la sección de información importante y en el formulario de inscripción.' },
   ],

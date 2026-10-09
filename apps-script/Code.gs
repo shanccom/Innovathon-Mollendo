@@ -4,6 +4,7 @@
  */
 
 const CONFIG = {
+  PRODUCTION_SPREADSHEET_ID: '1U48ftJJns3-4waJrt4A4uaI4OBNQoeyg1sOzzvXllI8',
   SHEET_NAME: 'Registros',
   CODE_PREFIX: 'IM',
   FIELDS: [
@@ -26,6 +27,7 @@ const CONFIG = {
     'availability',
     'termsAccepted',
     'source',
+    'phone',
   ],
   HEADERS: [
     'Código',
@@ -44,11 +46,12 @@ const CONFIG = {
     'Habilidades principales',
     'Áreas de aporte',
     'Eje temático / Reto',
-    'Compañero / Recomendación',
+    'Compañero',
     'LinkedIn / Portafolio',
     'Disponibilidad presencial',
     'Aceptó términos',
     'Origen',
+    'Número de celular',
   ],
 };
 
@@ -56,7 +59,10 @@ const CONFIG = {
 function doGet() {
   return jsonResponse({
     success: true,
-    version: 'v2.2-sin-codigo',
+    version: 'v3.0-registro-concurrente',
+    capabilities: { phone: true, atomicDuplicates: true },
+    testMode: isTestMode(),
+    testSpreadsheetId: isTestMode() ? PropertiesService.getScriptProperties().getProperty('QA_SPREADSHEET_ID') : undefined,
     message: 'Innovathon Mollendo · endpoint activo',
     headers: CONFIG.HEADERS,
   });
@@ -64,77 +70,151 @@ function doGet() {
 
 // Entrada principal: valida, verifica duplicados, guarda en Google Sheets y envía correo de confirmación.
 function doPost(event) {
-  const lock = LockService.getScriptLock();
-  lock.waitLock(15000);
-
+  let lock;
+  let locked = false;
+  let saved = null;
   try {
-    const data = readPayload(event);
+    const body = event && event.postData && event.postData.contents;
+    if (!body || body.length > 16384) return jsonResponse({ success: false, code: 'VALIDATION', error: 'Solicitud vacía o demasiado grande.' });
+    const data = normalizePayload(readPayload(event));
     const invalidField = validate(data);
-
     if (invalidField) {
-      return jsonResponse({ success: false, error: invalidField });
+      return jsonResponse({ success: false, code: 'VALIDATION', error: invalidField });
     }
-
+    lock = LockService.getScriptLock();
+    locked = lock.tryLock(10000);
+    if (!locked) return jsonResponse({ success: false, code: 'BUSY', retryable: true, error: 'Hay muchas inscripciones en este momento. Espera unos segundos y vuelve a intentar con los mismos datos.' });
     const sheet = getSheet();
-
-    // Verificación de duplicado por DNI o Correo personal
-    const duplicate = findDuplicate(sheet, data.dni, data.personalEmail);
+    const headers = ensureHeaders(sheet);
+    // La consulta y la escritura comparten el mismo bloqueo: solo un ganador.
+    const duplicate = findDuplicate(sheet, data, headers);
     if (duplicate) {
       return jsonResponse({
         success: false,
         isDuplicate: true,
-        registrationId: duplicate.code,
-        error: 'Este correo o DNI ya ha sido registrado previamente. Tu postulación para la Innovathon Mollendo 2026 ya está confirmada y en proceso de revisión por el equipo organizador.',
+        code: 'DUPLICATE',
+        error: 'Este correo o DNI ya ha sido registrado previamente. La postulación ya fue recibida y está en proceso de revisión.',
       });
     }
 
-    const nextRow = sheet.getLastRow();
-    const code = CONFIG.CODE_PREFIX + '-' + new Date().getFullYear() + '-' + String(nextRow).padStart(4, '0');
-    const row = [code, new Date()].concat(CONFIG.FIELDS.map((field) => formatValue(data[field])));
-
-    sheet.appendRow(row);
+    const code = nextRegistrationCode(sheet, headers);
+    const now = new Date();
+    const row = new Array(headers.length).fill('');
+    row[headers.indexOf('Código')] = code;
+    row[headers.indexOf('Fecha de registro')] = now;
+    CONFIG.FIELDS.forEach(function(field, index) {
+      row[headerIndex(headers, CONFIG.HEADERS[index + 2])] = formatValue(data[field]);
+    });
+    const nextRow = sheet.getLastRow() + 1;
+    if (nextRow > sheet.getMaxRows()) sheet.insertRowsAfter(sheet.getMaxRows(), 100);
+    // Impide perder el cero inicial del DNI y mantiene el celular como texto.
+    sheet.getRange(nextRow, headers.indexOf('DNI') + 1).setNumberFormat('@');
+    sheet.getRange(nextRow, headers.indexOf('Número de celular') + 1).setNumberFormat('@');
+    sheet.getRange(nextRow, 1, 1, row.length).setValues([row]);
     SpreadsheetApp.flush();
-
-    // Envío de correo de confirmación (no bloqueante ante posibles cuotas de Google)
-    sendConfirmationEmail(data, code);
-
-    return jsonResponse({ success: true, registrationId: code, registeredAt: new Date().toISOString() });
+    saved = { data: data, code: code, registeredAt: now.toISOString() };
   } catch (error) {
-    return jsonResponse({ success: false, error: 'No se pudo guardar la inscripción: ' + error.message });
+    console.error('No se pudo completar el registro: ' + error.name);
+    return jsonResponse({ success: false, code: 'STORAGE_ERROR', retryable: true, error: 'No pudimos confirmar el registro. Reintenta con el mismo DNI y correo.' });
   } finally {
-    lock.releaseLock();
+    if (locked) lock.releaseLock();
   }
+  // El correo nunca mantiene el bloqueo de Sheets ni invalida un registro guardado.
+  let emailSent = false;
+  if (!isTestMode()) {
+    try { emailSent = sendConfirmationEmail(saved.data, saved.code) === true; }
+    catch (_error) { console.warn('Inscripción guardada; correo pendiente.'); }
+  }
+  return jsonResponse({ success: true, registrationId: saved.code, registeredAt: saved.registeredAt, emailSent: emailSent });
 }
 
 // Busca si el DNI o el correo personal ya existen en los registros previos de la hoja.
-function findDuplicate(sheet, dni, personalEmail) {
+function findDuplicate(sheet, data, headers) {
   const lastRow = sheet.getLastRow();
   if (lastRow <= 1) return null; // Solo cabeceras
 
-  const cleanDni = String(dni || '').replace(/\D/g, '').trim();
-  const cleanEmail = String(personalEmail || '').trim().toLowerCase();
-
-  // Lee las columnas Código (1), Fecha (2), Nombres (3), DNI (4), Correo inst (5), Correo pers (6)
-  const range = sheet.getRange(2, 1, lastRow - 1, 6);
+  const cleanDni = data.dni;
+  const emails = [data.personalEmail, data.institutionalEmail].map(emailIdentity).filter(Boolean);
+  const width = Math.max(headers.indexOf('DNI'), headers.indexOf('Correo institucional'), headers.indexOf('Correo personal')) + 1;
+  const range = sheet.getRange(2, 1, lastRow - 1, width);
   const rows = range.getValues();
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    const existingCode = String(row[0] || '').trim();
-    const existingDni = String(row[3] || '').replace(/\D/g, '').trim();
-    const existingInstEmail = String(row[4] || '').trim().toLowerCase();
-    const existingPersEmail = String(row[5] || '').trim().toLowerCase();
+    const value = row[headers.indexOf('DNI')];
+    const existingDni = typeof value === 'number' ? String(value).padStart(8, '0') : String(value || '').trim();
+    const existingInstEmail = emailIdentity(row[headers.indexOf('Correo institucional')]);
+    const existingPersEmail = emailIdentity(row[headers.indexOf('Correo personal')]);
 
     if (cleanDni && existingDni === cleanDni) {
-      return { type: 'dni', code: existingCode };
+      return { type: 'dni' };
     }
 
-    if (cleanEmail && (existingPersEmail === cleanEmail || existingInstEmail === cleanEmail)) {
-      return { type: 'email', code: existingCode };
+    if (emails.some(function(email) { return email === existingPersEmail || email === existingInstEmail; })) {
+      return { type: 'email' };
     }
   }
 
   return null;
+}
+
+function emailIdentity(value) {
+  const email = String(value || '').trim().toLowerCase();
+  const parts = email.split('@');
+  if (parts[1] === 'gmail.com' || parts[1] === 'googlemail.com') {
+    return parts[0].split('+')[0].replace(/\./g, '') + '@gmail.com';
+  }
+  return email;
+}
+
+function normalizePayload(input) {
+  const data = {};
+  CONFIG.FIELDS.forEach(function(field) {
+    data[field] = input && typeof input[field] === 'string' ? input[field].trim() : '';
+  });
+  data.personalEmail = data.personalEmail.toLowerCase();
+  data.institutionalEmail = data.institutionalEmail.toLowerCase();
+  data.contributionAreas = input && Array.isArray(input.contributionAreas) ? input.contributionAreas.filter(function(v) { return typeof v === 'string' && v.trim(); }).map(function(v) { return v.trim(); }) : [];
+  data.availability = Boolean(input && input.availability === true);
+  data.termsAccepted = Boolean(input && input.termsAccepted === true);
+  return data;
+}
+
+function headerIndex(headers, label) {
+  const index = headers.indexOf(label);
+  return index >= 0 ? index : label === 'Compañero' ? headers.indexOf('Compañero / Recomendación') : -1;
+}
+
+function ensureHeaders(sheet) {
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(String);
+  // Reconoce el esquema de 18 columnas existente; nunca reordena sus datos.
+  const missing = CONFIG.HEADERS.filter(function(header) { return headerIndex(headers, header) < 0; });
+  if (missing.length) {
+    const needed = headers.length + missing.length;
+    if (needed > sheet.getMaxColumns()) sheet.insertColumnsAfter(sheet.getMaxColumns(), needed - sheet.getMaxColumns());
+    sheet.getRange(1, headers.length + 1, 1, missing.length).setValues([missing]).setFontWeight('bold');
+    return headers.concat(missing);
+  }
+  return headers;
+}
+
+function nextRegistrationCode(sheet, headers) {
+  const prefix = CONFIG.CODE_PREFIX + '-' + new Date().getFullYear() + '-';
+  const properties = PropertiesService.getScriptProperties();
+  const key = 'SEQUENCE_' + sheet.getParent().getId() + '_' + prefix;
+  let sequence = Number(properties.getProperty(key)) || 0;
+  if (sheet.getLastRow() > 1) {
+    sheet.getRange(2, headers.indexOf('Código') + 1, sheet.getLastRow() - 1, 1).getValues().forEach(function(row) {
+      const code = String(row[0]);
+      if (code.indexOf(prefix) === 0) sequence = Math.max(sequence, Number(code.slice(prefix.length)) || 0);
+    });
+  }
+  properties.setProperty(key, String(sequence + 1));
+  return prefix + String(sequence + 1).padStart(4, '0');
+}
+
+function isTestMode() {
+  return PropertiesService.getScriptProperties().getProperty('REGISTRATION_TEST_MODE') === 'true';
 }
 
 // Envía notificación por correo electrónico al participante tras registrarse con éxito.
@@ -282,31 +362,39 @@ function sendConfirmationEmail(data, code) {
     }
 
     MailApp.sendEmail(emailOptions);
-
-    console.log('Correo de confirmación enviado exitosamente a ' + recipient + ' con código ' + code);
+    console.log('Correo de confirmación enviado para ' + code);
+    return true;
   } catch (error) {
     // Si falla el envío (por cuotas diarias o filtros), la inscripción no se detiene.
-    console.error('No se pudo enviar el correo de confirmación: ' + error.message);
+    console.error('No se pudo enviar el correo de confirmación: ' + error.name);
+    return false;
   }
 }
 
 // Crea la hoja con sus encabezados; ejecuta esta función una sola vez.
 function setup() {
-  const sheet = getSheet();
-
-  if (sheet.getLastRow() === 0) {
-    sheet.appendRow(CONFIG.HEADERS);
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const sheet = getSheet();
+    ensureHeaders(sheet);
     sheet.setFrozenRows(1);
-    sheet.getRange(1, 1, 1, CONFIG.HEADERS.length).setFontWeight('bold');
+    SpreadsheetApp.flush();
+    return CONFIG.SHEET_NAME;
+  } finally {
+    lock.releaseLock();
   }
-
-  SpreadsheetApp.getActive().toast('Hoja "' + CONFIG.SHEET_NAME + '" lista.', 'Innovathon Mollendo', 5);
-  return CONFIG.SHEET_NAME;
 }
 
 // Devuelve la hoja de destino creándola si todavía no existe.
 function getSheet() {
-  const book = SpreadsheetApp.getActive();
+  let book = SpreadsheetApp.getActive();
+  if (isTestMode()) {
+    const testId = PropertiesService.getScriptProperties().getProperty('QA_SPREADSHEET_ID');
+    if (!testId || testId === CONFIG.PRODUCTION_SPREADSHEET_ID || (book && testId === book.getId())) throw new Error('QA necesita una hoja separada.');
+    book = SpreadsheetApp.openById(testId);
+  }
+  if (!book) throw new Error('No hay hoja vinculada.');
   const sheet = book.getSheetByName(CONFIG.SHEET_NAME) || book.insertSheet(CONFIG.SHEET_NAME);
 
   if (sheet.getLastRow() === 0) {
@@ -336,21 +424,30 @@ function validate(data) {
   if (!data.fullName || String(data.fullName).trim().length < 3) return 'Ingresa tus nombres y apellidos completos.';
   if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]+$/.test(String(data.fullName).trim())) return 'El nombre solo debe contener letras y espacios (sin números).';
   if (!/^\d{8}$/.test(String(data.dni || '').trim())) return 'El DNI debe tener 8 dígitos numéricos.';
+  if (!/^9\d{8}$/.test(data.phone)) return 'Ingresa un número de celular peruano de 9 dígitos que empiece con 9.';
   
   // Correo personal obligatorio
   const personalEmail = String(data.personalEmail || '').trim();
   if (!personalEmail) return 'El correo personal es obligatorio.';
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(personalEmail)) return 'El correo personal no es válido.';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(personalEmail) || personalEmail.indexOf('..') >= 0) return 'El correo personal no es válido.';
 
   // Correo institucional opcional
   const instEmail = String(data.institutionalEmail || '').trim();
-  if (instEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(instEmail)) {
+  if (instEmail && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(instEmail) || instEmail.indexOf('..') >= 0)) {
     return 'El formato del correo institucional no es válido.';
   }
 
   if (!data.sede) return 'Selecciona una sede o localidad.';
   if (!data.career) return 'Selecciona tu carrera o área.';
+  if (!data.institution) return 'Selecciona tu institución de procedencia.';
+  if (!data.academicLevel) return 'Selecciona tu nivel académico.';
+  if (data.sede === 'Otra localidad' && !data.otherSede) return 'Especifica tu localidad.';
+  if (data.career === 'Otra carrera o especialidad' && !data.otherCareer) return 'Especifica tu carrera.';
+  if (data.institution === 'Otra institución de educación superior' && !data.otherInstitution) return 'Especifica tu institución.';
+  if (!data.contributionAreas.length) return 'Selecciona al menos un área de aporte.';
+  if (!data.challengeInterest) return 'Selecciona un reto de interés.';
   if (!data.skills || String(data.skills).trim().length === 0) return 'Describe tus habilidades principales.';
+  if (data.skills.length > 500) return 'Las habilidades no pueden superar los 500 caracteres.';
   if (!data.availability) return 'Debes confirmar tu disponibilidad presencial.';
   if (!data.termsAccepted) return 'Debes aceptar los términos y condiciones.';
   return '';

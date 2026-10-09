@@ -31,6 +31,15 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Registration regression tests
+        run: npm test
+
+      - name: Install E2E browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Registration E2E tests (isolated service doubles)
+        run: npm run test:e2e
+
       - name: Build
         run: npm run build
         env:

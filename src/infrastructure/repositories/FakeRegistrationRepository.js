@@ -4,6 +4,7 @@ import {
   RegistrationDuplicateError,
 } from '../../domain/errors/registrationErrors.js';
 import { STORAGE_KEYS } from '../../shared/constants/storageKeys.js';
+import { registrationsOverlap } from '../../domain/entities/registrationIdentity.js';
 
 // Adapter used for local development: keeps registrations in localStorage.
 export class FakeRegistrationRepository extends RegistrationRepository {
@@ -12,18 +13,11 @@ export class FakeRegistrationRepository extends RegistrationRepository {
 
     try {
       const stored = readAll();
-      const cleanEmail = registration.personalEmail?.trim().toLowerCase();
-      const cleanDni = registration.dni?.trim();
-
-      const isDuplicate = stored.some((r) => {
-        const storedEmail = r.personalEmail?.trim().toLowerCase() || r.institutionalEmail?.trim().toLowerCase();
-        const storedDni = r.dni?.trim();
-        return (cleanEmail && storedEmail === cleanEmail) || (cleanDni && storedDni === cleanDni);
-      });
+      const isDuplicate = stored.some((r) => registrationsOverlap(registration, r));
 
       if (isDuplicate) {
         throw new RegistrationDuplicateError(
-          'Este correo o DNI ya ha sido registrado previamente. Tu postulación para Innovathon Mollendo 2026 ya está confirmada y en proceso de revisión.'
+          'Este correo o DNI ya ha sido registrado previamente. Tu postulación ya fue recibida y está en proceso de revisión.'
         );
       }
 
@@ -42,9 +36,7 @@ export class FakeRegistrationRepository extends RegistrationRepository {
 }
 
 function readAll() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEYS.registrations)) ?? [];
-  } catch {
-    return [];
-  }
+  const stored = JSON.parse(localStorage.getItem(STORAGE_KEYS.registrations)) ?? [];
+  if (!Array.isArray(stored)) throw new Error('Almacenamiento inválido');
+  return stored;
 }

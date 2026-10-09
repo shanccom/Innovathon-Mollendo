@@ -37,7 +37,7 @@ export function RegistrationForm({ form }) {
 
       {/* Duplicate / Already Registered Banner */}
       {status === 'duplicate' && (
-        <div className="mt-6 rounded-2xl border border-[#03c4c5]/50 bg-[#03c4c5]/10 p-4 sm:p-5 text-sm text-slate-200 shadow-xl backdrop-blur-md">
+        <div role="status" className="mt-6 rounded-2xl border border-[#03c4c5]/50 bg-[#03c4c5]/10 p-4 sm:p-5 text-sm text-slate-200 shadow-xl backdrop-blur-md">
           <div className="flex items-start gap-3.5">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#03c4c5]/20 text-[#03c4c5] border border-[#03c4c5]/40 mt-0.5">
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -59,7 +59,7 @@ export function RegistrationForm({ form }) {
 
       {/* Global Error Banner */}
       {status === 'error' && message && (
-        <div className="mt-6 rounded-2xl border border-rose-500/40 bg-rose-950/30 p-4 text-xs font-semibold text-rose-300">
+        <div role="alert" className="mt-6 rounded-2xl border border-rose-500/40 bg-rose-950/30 p-4 text-xs font-semibold text-rose-300">
           {message}
         </div>
       )}

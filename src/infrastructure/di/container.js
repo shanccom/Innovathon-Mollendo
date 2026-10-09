@@ -5,7 +5,7 @@ import { env } from '../config/env.js';
 
 // Composition root: single place where the app picks its concrete adapters.
 function buildRegistrationRepository() {
-  if (env.useFakeRegistration || !env.appsScriptUrl) return new FakeRegistrationRepository();
+  if (env.isDev && (env.useFakeRegistration || !env.appsScriptUrl)) return new FakeRegistrationRepository();
   return new AppsScriptRegistrationRepository();
 }
 

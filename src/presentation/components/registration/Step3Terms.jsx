@@ -39,29 +39,22 @@ export function Step3Terms({
       {/* Checkbox 1: Disponibilidad Presencial */}
       <div className="pt-2">
         <div
-          onClick={() =>
-            onChange({
-              target: {
-                name: 'availability',
-                type: 'checkbox',
-                checked: !values.availability,
-              },
-            })
-          }
           className="group flex items-start gap-3.5 cursor-pointer select-none"
         >
-          <div className="pt-0.5">
+          <div className="relative pt-0.5">
             <input
               id="field-availability"
               name="availability"
               type="checkbox"
               checked={values.availability}
               onChange={onChange}
-              onClick={(e) => e.stopPropagation()}
-              className="sr-only"
+              disabled={isSubmitting}
+              aria-invalid={Boolean(errors.availability)}
+              aria-describedby={errors.availability ? 'error-availability' : undefined}
+              className="peer absolute left-0 top-0.5 h-6 w-6 cursor-pointer opacity-0"
             />
             <div
-              className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border transition-all ${
+              className={`pointer-events-none flex h-6 w-6 shrink-0 items-center justify-center rounded-md border transition-all peer-focus-visible:ring-2 peer-focus-visible:ring-white ${
                 values.availability
                   ? 'border-[#cbfb45] bg-[#cbfb45] text-black shadow-[0_0_12px_rgba(203,251,69,0.3)]'
                   : 'border-[#2b3765] bg-[#0c132c] group-hover:border-slate-400'
@@ -154,29 +147,22 @@ export function Step3Terms({
       {/* Checkbox 2: Términos y Condiciones */}
       <div>
         <div
-          onClick={() =>
-            onChange({
-              target: {
-                name: 'termsAccepted',
-                type: 'checkbox',
-                checked: !values.termsAccepted,
-              },
-            })
-          }
           className="group flex items-start gap-3.5 cursor-pointer select-none"
         >
-          <div className="pt-0.5">
+          <div className="relative pt-0.5">
             <input
               id="field-termsAccepted"
               name="termsAccepted"
               type="checkbox"
               checked={values.termsAccepted}
               onChange={onChange}
-              onClick={(e) => e.stopPropagation()}
-              className="sr-only"
+              disabled={isSubmitting}
+              aria-invalid={Boolean(errors.termsAccepted)}
+              aria-describedby={errors.termsAccepted ? 'error-termsAccepted' : undefined}
+              className="peer absolute left-0 top-0.5 h-6 w-6 cursor-pointer opacity-0"
             />
             <div
-              className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border transition-all ${
+              className={`pointer-events-none flex h-6 w-6 shrink-0 items-center justify-center rounded-md border transition-all peer-focus-visible:ring-2 peer-focus-visible:ring-white ${
                 values.termsAccepted
                   ? 'border-[#cbfb45] bg-[#cbfb45] text-black shadow-[0_0_12px_rgba(203,251,69,0.3)]'
                   : 'border-[#2b3765] bg-[#0c132c] group-hover:border-slate-400'

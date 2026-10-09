@@ -1,64 +1,38 @@
-# Conectar el formulario con Google Sheets (Apps Script)
+# Conectar el formulario con Google Sheets
 
-El frontend **no** habla con Sheets directamente: envía un `POST` a un Web App de Google Apps
-Script y ese script escribe una fila por postulación. Solo hay que seguir estos pasos una vez.
+Hoja de producción: [Innovathon Mollendo 2026 - Inscripciones](https://docs.google.com/spreadsheets/d/1U48ftJJns3-4waJrt4A4uaI4OBNQoeyg1sOzzvXllI8/edit).
 
-## 1. Crear la hoja de cálculo
+1. Abre **Extensiones → Apps Script** con una cuenta autorizada para editar y desplegar el proyecto.
+2. Actualiza únicamente el archivo que contiene `doGet` y `doPost` con [`Code.gs`](../apps-script/Code.gs). Conserva los módulos de campañas, asistencia y correos existentes.
+3. Para un proyecto nuevo, usa [`appsscript.json`](../apps-script/appsscript.json). En un proyecto existente, conserva sus permisos y añade los de correo/URL Fetch si faltan; no reemplaces un manifiesto que otros módulos necesitan. Google puede solicitar autorización al propietario.
+4. Ejecuta `setup`: añade las columnas que falten al final, sin reordenar las 18 columnas originales ni modificar participantes anteriores. Guarda celular y DNI como texto.
+5. **Implementar → Gestionar implementaciones → Editar → Nueva versión → Implementar**. Mantén la URL `/exec` que usa la web, la cuenta ejecutora y la configuración de acceso existente.
+6. Consulta `/exec`: debe devolver `version: "v3.0-registro-concurrente"` y `capabilities: { phone: true, atomicDuplicates: true }`.
 
-1. Crea una hoja en el Drive compartido del equipo (por ejemplo `Innovathon Mollendo 2026 · Registros`).
-2. Opcional: importa `apps-script/registros-plantilla.csv` para tener los encabezados ya listos.
+Un push a GitHub publica el frontend; no actualiza Apps Script. Despliega el backend antes de publicar el frontend: una versión anterior del backend mostrará «Las inscripciones se están actualizando» y no recibirá el POST, para evitar perder el celular o guardar columnas desalineadas.
 
-## 2. Añadir el script
+## Frontend
 
-1. Menú **Extensiones → Apps Script**.
-2. Borra el contenido de `Code.gs` y pega el archivo [`apps-script/Code.gs`](../apps-script/Code.gs).
-3. **Configuración del proyecto → Mostrar el archivo de manifiesto `appsscript.json`** y pega
-   [`apps-script/appsscript.json`](../apps-script/appsscript.json).
-4. Ejecuta la función `setup` una vez (te pedirá autorizar el acceso a la hoja) y acepta los permisos.
+Configura el secreto de GitHub Actions `APPS_SCRIPT_URL` con la URL existente `/exec`. Para desarrollo local puedes usar:
 
-## 3. Desplegar el Web App
-
-1. **Implementar → Nueva implementación → Aplicación web**.
-2. **Ejecutar como:** `Yo` (o `Anyone with Google account` si la hoja es de una cuenta de servicio).
-3. **Quién tiene acceso:** `Cualquier persona`. Es obligatorio: sin esto el navegador recibe `403`.
-4. Copia la **URL `/exec`** y ponla en el `.env`:
-
-```bash
-VITE_APPS_SCRIPT_URL=https://script.google.com/macros/s/AKfycb.../exec
+```env
+VITE_APPS_SCRIPT_URL=https://script.google.com/macros/s/TU_IMPLEMENTACION/exec
 ```
 
-5. Reinicia `npm run dev`. Sin la variable, el frontend usa el repositorio *fake* (localStorage).
+Sin endpoint, solo el servidor de desarrollo usa `localStorage`. Producción nunca confirma un registro local como si se hubiera guardado en Sheets.
 
-## 4. Verificar
+## Duplicados y concurrencia
 
-```bash
-# Debe responder {"success":true,...}
-curl "https://script.google.com/macros/s/AKfycb.../exec"
+La consulta por DNI y los dos correos y la escritura comparten un `ScriptLock`. Se compara Gmail sin puntos ni sufijos `+alias`, también con `googlemail.com`. Para otros dominios se conservan puntos y sufijos. El bloqueo se libera después de `SpreadsheetApp.flush()` y antes de enviar el correo. Si se agota la espera, responde JSON `BUSY`; un fallo de correo no elimina una inscripción guardada.
 
-# Simula una postulación real
-curl -X POST "https://script.google.com/macros/s/AKfycb.../exec" \
-  -H "Content-Type: text/plain" \
-  -d '{"fullName":"Camila Valdivia","email":"camila@correo.com","phone":"987654321","city":"Mollendo","age":22,"occupation":"UNSA","participationType":"individual","termsAccepted":true}'
-```
+Todos los escritores del registro deben pertenecer al mismo proyecto de Apps Script. El bloqueo de un proyecto no coordina otro proyecto independiente ni ediciones manuales.
 
-Los códigos de registro tienen el formato `IM-<año>-<correlativo>` (ej. `IM-2026-0007`).
+## Pruebas reales aisladas
 
-## 5. Configurar secreto en GitHub Pages (CI/CD)
+1. Crea una hoja nueva de QA sin copiar participantes.
+2. Crea un **proyecto independiente** de Apps Script de QA y copia `Code.gs`. Usa `appsscript.qa.json` como su manifiesto `appsscript.json`.
+3. En las propiedades de **ese proyecto de QA** configura `REGISTRATION_TEST_MODE=true` y `QA_SPREADSHEET_ID=<ID_DE_LA_HOJA_QA>`.
+4. Autoriza y despliega únicamente el proyecto QA. En este modo no se envían correos.
+5. Sigue los comandos de [`pruebas-finales.md`](pruebas-finales.md) y verifica las filas de QA con el conector de Sheets.
 
-Para el despliegue automático en producción:
-1. Ve al repositorio en GitHub: **Settings → Secrets and variables → Actions**.
-2. Crea o actualiza el secreto de repositorio **`APPS_SCRIPT_URL`** con la URL del Web App (`/exec`).
-3. El workflow `.github/workflows/deploy.yml` inyectará automáticamente `VITE_APPS_SCRIPT_URL` durante `npm run build`.
-
-## Notas importantes
-
-- **CORS:** el frontend envía `Content-Type: text/plain` a propósito. Google Apps Script no responde
-  al `preflight` de `OPTIONS` que dispara un `application/json`, por eso se usa JSON dentro de
-  `text/plain`.
-- **Vista previa (`/preview`):** siempre responde 200, así que úsala solo para revisar, nunca en producción.
-- **Actualizar el script:** tras cada cambio debes crear una **nueva versión** (`Implementar → Nueva
-  implementación` o `Administrar implementaciones → Editar → Versión nueva`) y volver a copiar la URL
-  si cambia.
-- **Privacidad:** la hoja debe vivir en el Drive compartido del equipo y solo con acceso para
-  responsables de la organización. Nadie más debe tener el enlace de edición.
-
+Nunca actives TEST_MODE en el proyecto de producción: las propiedades se comparten entre sus implementaciones. El backend y k6 rechazan la hoja de producción como destino QA.

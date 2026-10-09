@@ -18,6 +18,7 @@ pnpm-debug.log*
 
 # Test and tooling caches
 coverage/
+test-results/
 .vite/
 
 # Editor / OS

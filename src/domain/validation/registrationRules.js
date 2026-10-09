@@ -103,6 +103,8 @@ export const registrationRules = {
     }
     return '';
   },
+  phone: (value) => /^9\d{8}$/.test(String(value ?? '').trim())
+    ? '' : 'Ingresa un número de celular peruano de 9 dígitos que empiece con 9.',
   institutionalEmail: (value) => {
     const trimmed = typeof value === 'string' ? value.trim() : '';
     if (!trimmed) return ''; // Opcional
@@ -163,15 +165,16 @@ export const registrationRules = {
   referencePerson: () => '',
   portfolioUrl: () => '',
   availability: (value) =>
-    value ? '' : 'Debes confirmar tu disponibilidad presencial para las fechas del evento (17 y 18 de diciembre).',
+    value === true ? '' : 'Debes confirmar tu disponibilidad presencial para las fechas del evento (17 y 18 de diciembre).',
   termsAccepted: (value) =>
-    value ? '' : 'Debes aceptar los Términos y Condiciones y el Tratamiento de Datos Personales.',
+    value === true ? '' : 'Debes aceptar los Términos y Condiciones y el Tratamiento de Datos Personales.',
 };
 
 export const STEP_FIELDS = {
   1: [
     'fullName',
     'dni',
+    'phone',
     'personalEmail',
     'institutionalEmail',
     'sede',

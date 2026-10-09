@@ -183,6 +183,39 @@ export function Step1PersonalData({ values, errors, onChange, onBlur, onNext }) 
           )}
         </div>
 
+        {/* Número de contacto obligatorio */}
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="field-phone" className="text-xs font-semibold text-slate-300">
+            Número de celular <span className="text-purple-400">*</span>
+          </label>
+          <input
+            id="field-phone"
+            name="phone"
+            type="tel"
+            inputMode="numeric"
+            autoComplete="tel-national"
+            required
+            maxLength={9}
+            pattern="9[0-9]{8}"
+            placeholder="Ej. 987654321"
+            value={values.phone}
+            onChange={onChange}
+            onBlur={onBlur}
+            aria-invalid={Boolean(errors.phone)}
+            aria-describedby={errors.phone ? 'error-phone' : 'hint-phone'}
+            className={`w-full rounded-xl border bg-[#0d1633]/70 py-3 px-4 text-sm text-white placeholder-slate-500 outline-none transition focus:ring-2 ${
+              errors.phone
+                ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/20'
+                : 'border-slate-800 focus:border-[#b8da02] focus:ring-[#b8da02]/20'
+            }`}
+          />
+          {errors.phone ? (
+            <p id="error-phone" role="alert" className="text-xs font-semibold text-rose-400">{errors.phone}</p>
+          ) : (
+            <p id="hint-phone" className="text-xs text-slate-400">9 dígitos, sin el prefijo +51.</p>
+          )}
+        </div>
+
         {/* Sede */}
         <div className="flex flex-col gap-1.5">
           <label htmlFor="field-sede" className="text-xs font-semibold text-slate-300">

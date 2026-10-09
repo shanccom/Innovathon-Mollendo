@@ -49,7 +49,7 @@ una agenda externa recientemente publicada:
 | 17 y 18 de diciembre de 2026, presencial, laptop y accesorios | Términos de `Step3Terms.jsx` y metadatos existentes |
 | Postulación gratuita; verificación de cupos y perfil | Términos de `Step3Terms.jsx` |
 | Perfil académico y áreas de aporte | Formulario activo y `registrationCatalog.js` |
-| Compañero o docente de referencia opcional | `Step2SkillsTeam.jsx` |
+| Compañero de equipo opcional y celular obligatorio | `Step2SkillsTeam.jsx` / `Step1PersonalData.jsx` |
 | Cuatro líneas de reto | `INNOVATHON_CHALLENGES` |
 | Propósito, ideación, prototipado y colaboración | `EVENT.summary`, manifiesto y experiencias existentes |
 | Bases y reglamento | URLs existentes en `EVENT.documents` |

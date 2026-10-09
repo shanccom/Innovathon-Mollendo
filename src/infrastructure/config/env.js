@@ -1,5 +1,5 @@
 // Typed access to Vite env vars, with defaults safe for local development.
-const rawEnv = import.meta.env;
+const rawEnv = import.meta.env ?? {};
 
 export const env = {
   siteUrl: rawEnv.VITE_SITE_URL ?? 'https://innovathonmollendo.tech',
@@ -11,6 +11,6 @@ export const env = {
 // Guards misconfigured deployments before any request is attempted.
 export function assertRegistrationEndpoint() {
   if (!env.appsScriptUrl) {
-    throw new Error('Falta configurar VITE_APPS_SCRIPT_URL con la URL del Web App de Google Apps Script.');
+    throw new Error('Las inscripciones no están disponibles en este momento. Inténtalo más tarde.');
   }
 }
