@@ -4,7 +4,7 @@ Hoja de producción: [Innovathon Mollendo 2026 - Inscripciones](https://docs.goo
 
 1. Abre **Extensiones → Apps Script** con una cuenta autorizada para editar y desplegar el proyecto.
 2. Actualiza únicamente el archivo que contiene `doGet` y `doPost` con [`Code.gs`](../apps-script/Code.gs). Conserva los módulos de campañas, asistencia y correos existentes.
-3. Para un proyecto nuevo, usa [`appsscript.json`](../apps-script/appsscript.json). En un proyecto existente, conserva sus permisos y añade los de correo/URL Fetch si faltan; no reemplaces un manifiesto que otros módulos necesitan. Google puede solicitar autorización al propietario.
+3. Para un proyecto nuevo, usa [`appsscript.json`](../apps-script/appsscript.json). El acceso explícito por ID requiere el alcance `spreadsheets`; `spreadsheets.currentonly` no basta. En un proyecto existente, conserva sus permisos y añade los de Sheets/correo/URL Fetch si faltan; no reemplaces un manifiesto que otros módulos necesitan. Google puede solicitar autorización al propietario.
 4. Ejecuta `setup`: añade las columnas que falten al final, sin reordenar las 18 columnas originales ni modificar participantes anteriores. Guarda celular y DNI como texto.
 5. **Implementar → Gestionar implementaciones → Editar → Nueva versión → Implementar**. Mantén la URL `/exec` que usa la web, la cuenta ejecutora y la configuración de acceso existente.
 6. Consulta `/exec`: debe devolver `version: "v3.0-registro-concurrente"` y `capabilities: { phone: true, atomicDuplicates: true }`.

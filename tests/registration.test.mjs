@@ -62,6 +62,14 @@ test('migración de las 18 columnas conserva el orden y escribe cada dato bajo s
   assert.equal(new Set(h.rows[0]).size, 22);
 });
 
+test('Web App guarda en la hoja autorizada aunque no exista una hoja activa', () => {
+  const h = createHarness({ activeUnavailable: true });
+  assert.equal(h.post(valid).success, true);
+  assert.ok(h.trace.includes('open:1U48ftJJns3-4waJrt4A4uaI4OBNQoeyg1sOzzvXllI8'));
+  assert.equal(h.rows[1][h.rows[0].indexOf('Número de celular')], valid.phone);
+  assert.equal(h.post(valid).isDuplicate, true);
+});
+
 test('DNI con cero inicial, correo personal/institucional cruzado y variantes Gmail bloquean duplicados', () => {
   const h = createHarness();
   assert.equal(h.post({ ...valid, dni: '01234567', personalEmail: 'qa.test@gmail.com', institutionalEmail: 'qa@unsa.edu.pe' }).success, true);

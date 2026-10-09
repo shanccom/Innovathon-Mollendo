@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-09",
+  "environment": "private Apps Script editor, separate real QA spreadsheet",
+  "function": "smokeQa",
+  "passed": 5,
+  "created": 2,
+  "duplicates": 3,
+  "phoneVerified": true,
+  "emailSent": false,
+  "source": "qa_smoke_1791567172222",
+  "concurrent": false
+}

@@ -388,11 +388,15 @@ function setup() {
 
 // Devuelve la hoja de destino creándola si todavía no existe.
 function getSheet() {
-  let book = SpreadsheetApp.getActive();
+  let book;
   if (isTestMode()) {
+    const bound = SpreadsheetApp.getActive();
     const testId = PropertiesService.getScriptProperties().getProperty('QA_SPREADSHEET_ID');
-    if (!testId || testId === CONFIG.PRODUCTION_SPREADSHEET_ID || (book && testId === book.getId())) throw new Error('QA necesita una hoja separada.');
+    if (!testId || testId === CONFIG.PRODUCTION_SPREADSHEET_ID || (bound && testId === bound.getId())) throw new Error('QA necesita una hoja separada.');
     book = SpreadsheetApp.openById(testId);
+  } else {
+    // Un Web App no tiene una hoja activa: usa el destino fijo autorizado.
+    book = SpreadsheetApp.openById(CONFIG.PRODUCTION_SPREADSHEET_ID);
   }
   if (!book) throw new Error('No hay hoja vinculada.');
   const sheet = book.getSheetByName(CONFIG.SHEET_NAME) || book.insertSheet(CONFIG.SHEET_NAME);

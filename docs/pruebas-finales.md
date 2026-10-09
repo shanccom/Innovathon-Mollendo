@@ -4,18 +4,21 @@
 
 La regresión y los E2E locales aprobaron. Las comprobaciones de lectura del sitio y del endpoint publicado aprobaron. **La carga de escritura concurrente sobre Google Sheets real está pendiente de una implementación QA autorizada.** Los tiempos locales no representan la latencia ni las cuotas de Google.
 
-El propietario publicó la **versión 3 el 9 de octubre a las 12:09 (Lima)** en la URL existente. Se verificó por HTTP `v3.0-registro-concurrente`, `phone: true`, `atomicDuplicates: true` y `testMode: false`. `setup` terminó correctamente y la lectura real confirmó 22 columnas: las 18 originales más Otra institución, Otra sede, Otra carrera y Número de celular. Los permisos del proyecto de producción se conservaron.
+Se publicó la **versión 4 el 9 de octubre a las 12:31 (Lima)** en la URL existente. Incluye acceso explícito a la hoja por ID, necesario fuera del editor. Se verificó por HTTP `v3.0-registro-concurrente`, `phone: true`, `atomicDuplicates: true` y `testMode: false`. `setup` terminó correctamente y la lectura real confirmó 22 columnas: las 18 originales más Otra institución, Otra sede, Otra carrera y Número de celular. Los permisos del proyecto de producción se conservaron.
 
-El proyecto independiente «Innovathon QA · concurrencia · 2026-10-09» tiene el código de pruebas preparado. Su ejecución está pendiente de autorizar el alcance de Google Sheets de la cuenta propietaria; todavía no se ha realizado la carga de escritura real.
+El propietario autorizó el alcance de Google Sheets para el proyecto independiente «Innovathon QA · concurrencia · 2026-10-09». Se creó una hoja QA privada y `smokeQa` aprobó a las 12:32: cinco POST secuenciales, dos registros guardados y leídos, tres duplicados rechazados (DNI, email y alias Gmail), celular como texto y ningún correo enviado. Esta ejecución privada no mide concurrencia por HTTP. La revisión automática rechazó hacer público el endpoint QA sin autorización específica; la carga real con k6 queda pendiente de esa autorización.
 
 | Prueba | Entorno | Resultado |
 | --- | --- | --- |
-| Regresión | Node, Code.gs real con dobles de servicios Google | 14/14 aprobadas |
+| Regresión | Node, Code.gs real con dobles de servicios Google | 15/15 aprobadas |
+| Guardado y duplicados reales | Editor privado de Apps Script y hoja QA real | 5/5; 2 filas leídas; 3 duplicados; celular como texto |
+| Validación publicada | POST inválidos al endpoint de producción, versión 4 | 4/4 rechazados con VALIDATION; sin escritura/correo |
 | Concurrencia con workers | 8 workers, memoria compartida | 80 envíos; 34 filas; una por grupo repetido |
 | E2E | Playwright, escritorio 1280×900 y móvil 390×844 | 11/11 escenarios aprobados |
 | k6 del formulario | HTTP local, 32 usuarios virtuales, 8 workers | 104 POST: 35 creados, 69 duplicados rechazados; 209/209 checks |
 | k6 del frontend publicado | 8 usuarios virtuales; 40 iteraciones | 121 peticiones; 160/160 checks; p95 121,68 ms |
 | k6 del endpoint real, solo GET | 2 usuarios virtuales; 10 consultas | 10/10 checks; 20 peticiones con redirecciones; p95 HTTP 1,03 s |
+| k6 del endpoint v3 desplegado, solo GET | 2 usuarios virtuales; 10 consultas | 10/10 checks; 20 peticiones; p95 HTTP 1,73 s; p95 de iteración 2,18 s |
 
 k6 local: p95 de POST **15,73 ms**, cero fallos HTTP. El endpoint real tenía la versión `v2.2-sin-codigo` durante la medición. Una consulta GET confirma que el endpoint responde, no que pueda escribir una fila o enviar un correo. En el GET real, p95 de la iteración completa con redirecciones fue 1,89 s.
 
@@ -39,6 +42,7 @@ La hoja usa 18 encabezados y el backend anterior escribía 21 campos por posici�
 - Backend anterior: aviso de actualización antes del POST; recuperación tras actualizarse.
 - Compatibilidad con 18 columnas, ampliación de filas/columnas, códigos únicos y neutralización de fórmulas.
 - Liberación de bloqueo después de flush y antes de correo; fallo de correo conserva el registro.
+- Acceso por ID a la hoja de producción aun cuando no existe una hoja activa en el contexto Web App.
 
 ## Reproducir
 
@@ -62,6 +66,7 @@ $env:SITE_URL = 'https://innovathonmollendo.tech'
 k6 run tests/k6/frontend.js
 $env:HEALTH_ENDPOINT = '<URL /exec publicada>'
 k6 run tests/k6/availability.js
+node tests/google/production-validation.mjs
 ```
 
 Para carga real en una hoja QA nueva, configura un proyecto independiente según [la guía](apps-script-setup.md). Empieza con menor concurrencia si la cuenta tiene cuotas limitadas:
@@ -81,4 +86,4 @@ No se certifica alta disponibilidad con estas pruebas. Apps Script/Sheets tienen
 
 El código reduce la contención y responde BUSY cuando obtiene el control de la ejecución; una cuota de Google puede interrumpirla antes de alcanzar el manejador. La espera del cliente termina a los 30 segundos; no se repite el POST automáticamente porque el registro podría haberse guardado.
 
-Referencias: [Lock y flush de Apps Script](https://developers.google.com/apps-script/reference/lock/lock), [cuotas de Apps Script](https://developers.google.com/apps-script/guides/services/quotas), [métricas de k6](https://grafana.com/docs/k6/latest/using-k6/metrics/).
+Referencias: [contexto de scripts vinculados y Web Apps](https://developers.google.com/apps-script/guides/bound), [Lock y flush de Apps Script](https://developers.google.com/apps-script/reference/lock/lock), [cuotas de Apps Script](https://developers.google.com/apps-script/guides/services/quotas), [métricas de k6](https://grafana.com/docs/k6/latest/using-k6/metrics/).

@@ -6,7 +6,7 @@ const source = readFileSync(new URL('../../apps-script/Code.gs', import.meta.url
 
 // Runs the actual Code.gs with service doubles. It does not emulate Google quotas,
 // network availability or MailApp deliverability. Shared storage supports worker tests.
-export function createHarness({ rows = [liveHeaders], store, lock, busy = false, storageFailure = false, mailFailure = false, testMode = false, properties = {}, maxRows = 987, maxColumns = 26 } = {}) {
+export function createHarness({ rows = [liveHeaders], store, lock, busy = false, storageFailure = false, mailFailure = false, testMode = false, activeUnavailable = false, properties = {}, maxRows = 987, maxColumns = 26 } = {}) {
   let state = { rows: structuredClone(rows), properties: { ...properties } };
   const trace = [];
   let held = false;
@@ -64,7 +64,11 @@ export function createHarness({ rows = [liveHeaders], store, lock, busy = false,
       releaseLock() { trace.push('release'); held = false; lock?.release(); },
       waitLock(ms) { if (!this.tryLock(ms)) throw new Error('Busy'); },
     }) },
-    SpreadsheetApp: { getActive: () => book, openById: () => ({ ...book, getId: () => 'qa-fixture' }), flush() { trace.push('flush'); } },
+    SpreadsheetApp: {
+      getActive() { if (activeUnavailable) throw new Error('No active spreadsheet in web app'); return book; },
+      openById(id) { trace.push(`open:${id}`); return { ...book, getId: () => id }; },
+      flush() { trace.push('flush'); },
+    },
     ContentService: { MimeType: { JSON: 'application/json' }, createTextOutput: (text) => ({ text, setMimeType() { return this; } }) },
     UrlFetchApp: { fetch() { throw new Error('Network deliberately disabled in harness'); } },
     MailApp: { sendEmail() { if (held) throw new Error('Email holds the sheet lock'); trace.push('email'); if (mailFailure) throw new Error('Quota'); } },
