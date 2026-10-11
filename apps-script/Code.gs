@@ -59,7 +59,7 @@ var REGISTRATION_CONFIG = {
 function doGet() {
   return jsonResponse({
     success: true,
-    version: 'v3.1-urls-directas',
+    version: 'v3.2-sin-codigo',
     capabilities: { phone: true, atomicDuplicates: true },
     testMode: isTestMode(),
     testSpreadsheetId: isTestMode() ? PropertiesService.getScriptProperties().getProperty('QA_SPREADSHEET_ID') : undefined,
@@ -245,7 +245,6 @@ function sendConfirmationEmail(data, code) {
 
     const topBannerUrl = 'https://innovathonmollendo.tech/assets/email-banner-top.png';
     const bottomBannerUrl = 'https://innovathonmollendo.tech/assets/email-banner-bottom.png';
-    const barcodeUrl = 'https://bwipjs-api.metafloor.com/?bcid=code128&text=' + encodeURIComponent(code) + '&scale=2&height=12&includetext';
 
     const htmlBody = `
 <!DOCTYPE html>
@@ -296,19 +295,6 @@ function sendConfirmationEmail(data, code) {
         </div>
       </div>
 
-      <!-- Pase de Acreditación con Código de Barras (Code 128) -->
-      <div style="background: #070a18; border: 1px dashed #741cf3; border-radius: 14px; padding: 18px; text-align: center; margin: 22px 0;">
-        <div style="font-size: 10px; color: #c4b5fd; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; margin-bottom: 12px;">
-          Pase de Acreditación Presencial
-        </div>
-        <div style="display: inline-block; background: #ffffff; padding: 10px 18px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.4);">
-          <img src="${barcodeUrl}" alt="Código: ${code}" width="280" border="0" style="display: block; max-width: 280px; height: auto;" />
-        </div>
-        <p style="color: #94a3b8; font-size: 11px; margin: 10px 0 0;">
-          Presenta este código en la mesa de ingreso el 17 y 18 de Diciembre.
-        </p>
-      </div>
-
       <p><strong style="color: #ffffff;">¿Qué sigue ahora?</strong><br>
       El equipo organizador revisará tu postulación y te contactará a este correo electrónico con los detalles para unirte a la comunidad oficial de participantes.</p>
 
@@ -340,7 +326,6 @@ function sendConfirmationEmail(data, code) {
     `;
 
     const plainText = '¡Hola ' + fullName + '! Tu postulación para Innovathon Mollendo 2026 ha sido recibida con éxito.\n\n' +
-      'Código de Acreditación: ' + code + '\n' +
       'DNI: ' + dni + '\n' +
       'Sede: ' + sede + '\n' +
       (career ? 'Carrera: ' + career + '\n' : '') +
