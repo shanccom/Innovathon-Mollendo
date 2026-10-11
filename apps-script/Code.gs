@@ -55,28 +55,64 @@ var REGISTRATION_CONFIG = {
   ],
 };
 
-// Health check: confirma que el Web App está desplegado y responde.
-function doGet() {
+// Health check y consulta de datos administrativos
+function doGet(e) {
+  if (e && e.parameter && (e.parameter.action === 'read_participants' || e.parameter.action === 'data')) {
+    try {
+      const sheet = getSheet();
+      const data = sheet.getDataRange().getValues();
+      if (data.length <= 1) {
+        return jsonResponse({ success: true, total: 0, data: [] });
+      }
+      const headers = data[0];
+      const rows = data.slice(1).map(function(row) {
+        var item = {};
+        headers.forEach(function(h, i) {
+          if (h) item[String(h).trim()] = row[i];
+        });
+        return item;
+      });
+      return jsonResponse({ success: true, total: rows.length, data: rows });
+    } catch (err) {
+      return jsonResponse({ success: false, error: err.message });
+    }
+  }
+
   return jsonResponse({
     success: true,
-    version: 'v3.2-sin-codigo',
-    capabilities: { phone: true, atomicDuplicates: true },
+    version: 'v3.3-comunicados',
+    capabilities: { phone: true, atomicDuplicates: true, announcements: true },
     testMode: isTestMode(),
     testSpreadsheetId: isTestMode() ? PropertiesService.getScriptProperties().getProperty('QA_SPREADSHEET_ID') : undefined,
-    message: 'Innovathon Mollendo · endpoint activo',
+    message: 'Innovathon Mollendo · endpoint activo con soporte para Comunicados',
     headers: REGISTRATION_CONFIG.HEADERS,
   });
 }
 
-// Entrada principal: valida, verifica duplicados, guarda en Google Sheets y envía correo de confirmación.
+// Entrada principal: valida, verifica duplicados, guarda en Google Sheets y despacha comunicados o registros.
 function doPost(event) {
   let lock;
   let locked = false;
   let saved = null;
   try {
     const body = event && event.postData && event.postData.contents;
-    if (!body || body.length > 16384) return jsonResponse({ success: false, code: 'VALIDATION', error: 'Solicitud vacía o demasiado grande.' });
-    const data = normalizePayload(readPayload(event));
+    if (!body) return jsonResponse({ success: false, code: 'VALIDATION', error: 'Solicitud vacía o demasiado grande.' });
+    
+    const rawPayload = readPayload(event);
+    const payload = rawPayload && typeof rawPayload === 'object' && !Array.isArray(rawPayload) ? rawPayload : {};
+    const action = payload.action || '';
+
+    // 1. Acciones administrativas de Comunicados
+    if (action === 'send_test') {
+      return handleSendTest(payload);
+    }
+    if (action === 'send_campaign') {
+      return handleSendCampaign(payload);
+    }
+
+    // 2. Flujo de inscripción pública (con límite de tamaño para evitar abusos)
+    if (body.length > 16384) return jsonResponse({ success: false, code: 'VALIDATION', error: 'Solicitud vacía o demasiado grande.' });
+    const data = normalizePayload(payload);
     const invalidField = validate(data);
     if (invalidField) {
       return jsonResponse({ success: false, code: 'VALIDATION', error: invalidField });
@@ -549,6 +585,155 @@ function reenviarConfirmacionParticipante() {
     Logger.log('No se encontró ninguna fila con ' + correoErroneo + ' ni ' + correoCorregido + '. Revisa manualmente la columna Correo personal.');
   }
 }
+
+// ==========================================
+// MÓDULO DE COMUNICADOS (Innovathon-Admin)
+// ==========================================
+
+function handleSendTest(contents) {
+  try {
+    const to = String(contents.to || '').trim();
+    if (!to || !to.includes('@')) {
+      return jsonResponse({ success: false, error: 'Correo de destinatario inválido.' });
+    }
+
+    let imageBlob = null;
+    if (contents.imageBase64 && contents.imageMimeType && typeof Utilities !== 'undefined') {
+      const raw = contents.imageBase64.indexOf(',') >= 0 ? contents.imageBase64.split(',')[1] : contents.imageBase64;
+      imageBlob = Utilities.newBlob(Utilities.base64Decode(raw), contents.imageMimeType, 'banner');
+    }
+
+    let html = String(contents.htmlBody || '');
+    const emailParams = {
+      to: to,
+      subject: contents.subject || 'Prueba de Comunicado · Innovathon Mollendo 2026',
+      body: contents.plainBody || 'Prueba de comunicado oficial.',
+      name: 'Innovathon Mollendo 2026',
+    };
+
+    if (imageBlob) {
+      html = html.replace(/src="data:image\/[^;]+;base64,[^"]+"/g, 'src="cid:imagen"');
+      emailParams.inlineImages = { imagen: imageBlob };
+    }
+    if (html) {
+      emailParams.htmlBody = html;
+    }
+
+    MailApp.sendEmail(emailParams);
+    return jsonResponse({ success: true, message: 'Correo de prueba enviado con éxito a ' + to });
+  } catch (err) {
+    console.error('Error enviando prueba: ' + err);
+    return jsonResponse({ success: false, error: 'Error al despachar correo por MailApp: ' + err.message });
+  }
+}
+
+function handleSendCampaign(contents) {
+  try {
+    const recipients = Array.isArray(contents.destinatarios) ? contents.destinatarios : [];
+    if (!recipients.length) {
+      return jsonResponse({ success: false, error: 'No se recibieron destinatarios para la campaña.' });
+    }
+
+    const campaignName = String(contents.campaignName || 'Campaña sin título').trim();
+    const sheet = getSheet();
+    const ss = (sheet && sheet.getParent && typeof sheet.getParent().getSheetByName === 'function')
+      ? sheet.getParent()
+      : (typeof SpreadsheetApp !== 'undefined' && typeof SpreadsheetApp.getActive === 'function' ? SpreadsheetApp.getActive() : null);
+    let logSheet = ss && typeof ss.getSheetByName === 'function' ? ss.getSheetByName('HISTORIAL_COMUNICADOS') : null;
+    if (!logSheet && ss && typeof ss.insertSheet === 'function') {
+      logSheet = ss.insertSheet('HISTORIAL_COMUNICADOS');
+      if (logSheet && typeof logSheet.appendRow === 'function') {
+        logSheet.appendRow(['Fecha', 'Campaña', 'Destinatario', 'Nombre', 'Asunto', 'Estado', 'Error']);
+      }
+      if (logSheet && typeof logSheet.setFrozenRows === 'function') {
+        logSheet.setFrozenRows(1);
+      }
+    }
+
+    let imageBlob = null;
+    if (contents.template && contents.template.imageBase64 && typeof Utilities !== 'undefined') {
+      const raw = contents.template.imageBase64.indexOf(',') >= 0 
+        ? contents.template.imageBase64.split(',')[1] 
+        : contents.template.imageBase64;
+      imageBlob = Utilities.newBlob(Utilities.base64Decode(raw), contents.template.imageMimeType || 'image/jpeg', 'banner');
+    }
+
+    let enviados = 0;
+    let errores = 0;
+    const detalles = [];
+
+    for (let i = 0; i < recipients.length; i++) {
+      const r = recipients[i];
+      const targetEmail = String(r.correo || '').trim();
+      const targetName = String(r.nombre || '').trim();
+      const subject = String(r.asunto || (contents.template && contents.template.asunto) || 'Comunicado Oficial Innovathon Mollendo 2026');
+
+      if (!targetEmail || !targetEmail.includes('@')) {
+        errores++;
+        detalles.push({ correo: targetEmail, nombre: targetName, estado: 'ERROR', error: 'Email inválido', timestamp: new Date().toLocaleTimeString() });
+        if (logSheet && typeof logSheet.appendRow === 'function') {
+          logSheet.appendRow([new Date(), campaignName, targetEmail, targetName, subject, 'ERROR', 'Email inválido']);
+        }
+        continue;
+      }
+
+      try {
+        let html = String(r.htmlBody || '');
+        const emailParams = {
+          to: targetEmail,
+          subject: subject,
+          body: String(r.plainBody || ''),
+          name: 'Innovathon Mollendo 2026',
+        };
+
+        if (imageBlob) {
+          html = html.replace(/src="data:image\/[^;]+;base64,[^"]+"/g, 'src="cid:imagen"');
+          emailParams.inlineImages = { imagen: imageBlob };
+        }
+        if (html) {
+          emailParams.htmlBody = html;
+        }
+
+        MailApp.sendEmail(emailParams);
+        enviados++;
+        detalles.push({ correo: targetEmail, nombre: targetName, estado: 'ENVIADO', timestamp: new Date().toLocaleTimeString() });
+        if (logSheet && typeof logSheet.appendRow === 'function') {
+          logSheet.appendRow([new Date(), campaignName, targetEmail, targetName, subject, 'ENVIADO', '']);
+        }
+      } catch (err) {
+        errores++;
+        detalles.push({ correo: targetEmail, nombre: targetName, estado: 'ERROR', error: err.message, timestamp: new Date().toLocaleTimeString() });
+        if (logSheet && typeof logSheet.appendRow === 'function') {
+          logSheet.appendRow([new Date(), campaignName, targetEmail, targetName, subject, 'ERROR', err.message]);
+        }
+      }
+
+      // Pacing preventivo de 1 segundo entre envíos para cuidar cuota y reputación
+      if (typeof Utilities !== 'undefined' && Utilities.sleep) {
+        Utilities.sleep(1000);
+      }
+    }
+
+    return jsonResponse({
+      success: true,
+      campaign: {
+        id: 'CMP_' + Date.now(),
+        nombre: campaignName,
+        asunto: contents.template ? contents.template.asunto : '',
+        cuerpo: contents.template ? contents.template.cuerpo : '',
+        fechaEnvio: new Date().toISOString(),
+        totalDestinatarios: recipients.length,
+        enviados: enviados,
+        errores: errores,
+        detalles: detalles,
+      },
+    });
+  } catch (err) {
+    console.error('Error procesando campaña: ' + err);
+    return jsonResponse({ success: false, error: 'Fallo al procesar campaña: ' + err.message });
+  }
+}
+
 
 
 
