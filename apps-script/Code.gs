@@ -212,9 +212,8 @@ function nextRegistrationCode(sheet, headers) {
   const prefix = CONFIG.CODE_PREFIX + '-' + new Date().getFullYear() + '-';
   const properties = PropertiesService.getScriptProperties();
   const key = 'SEQUENCE_' + sheet.getParent().getId() + '_' + prefix;
-  let sequence = 0;
+  let sequence = Number(properties.getProperty(key)) || 0;
   if (sheet.getLastRow() > 1) {
-    sequence = Number(properties.getProperty(key)) || 0;
     const codeCol = headers.indexOf('Código') + 1;
     if (codeCol > 0) {
       sheet.getRange(2, codeCol, sheet.getLastRow() - 1, 1).getValues().forEach(function(row) {
