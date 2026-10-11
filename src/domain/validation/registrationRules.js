@@ -101,6 +101,18 @@ export const registrationRules = {
     if (!EMAIL_PATTERN.test(trimmed) || trimmed.includes('..')) {
       return 'Ingresa un correo electrónico válido (ej. tu_correo@gmail.com).';
     }
+    if (/\.(con|cmo|comm|coom|cpm|col)$/i.test(trimmed)) {
+      return 'Revisa la terminación de tu correo (parece un error al escribir .com).';
+    }
+    if (/@(gmai|gamil|gmial|gmaill)\.com$/i.test(trimmed)) {
+      return 'El dominio parece tener un error tipográfico. ¿Quisiste escribir @gmail.com?';
+    }
+    if (/@(hotmial|hotmai)\.com$/i.test(trimmed)) {
+      return 'El dominio parece tener un error tipográfico. ¿Quisiste escribir @hotmail.com?';
+    }
+    if (/@(outlok|outloo)\.com$/i.test(trimmed)) {
+      return 'El dominio parece tener un error tipográfico. ¿Quisiste escribir @outlook.com?';
+    }
     return '';
   },
   phone: (value) => /^9\d{8}$/.test(String(value ?? '').trim())
@@ -110,6 +122,9 @@ export const registrationRules = {
     if (!trimmed) return ''; // Opcional
     if (!EMAIL_PATTERN.test(trimmed) || trimmed.includes('..')) {
       return 'Ingresa un formato de correo válido (ej. usuario@unsa.edu.pe).';
+    }
+    if (/\.(con|cmo|comm|coom|cpm|col)$/i.test(trimmed)) {
+      return 'Revisa la terminación de tu correo (parece un error tipográfico).';
     }
     const domain = trimmed.split('@')[1]?.toLowerCase() || '';
     if (FREE_PERSONAL_PROVIDERS.includes(domain)) {

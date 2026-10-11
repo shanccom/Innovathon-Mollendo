@@ -427,11 +427,22 @@ function validate(data) {
   const personalEmail = String(data.personalEmail || '').trim();
   if (!personalEmail) return 'El correo personal es obligatorio.';
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(personalEmail) || personalEmail.indexOf('..') >= 0) return 'El correo personal no es válido.';
+  if (/\.(con|cmo|comm|coom|cpm|col)$/i.test(personalEmail)) {
+    return 'Revisa la terminación del correo personal (escribiste .con u otra errata en vez de .com).';
+  }
+  if (/@(gmai|gamil|gmial|gmaill|hotmial|hotmai|outlok|outloo)\.com$/i.test(personalEmail)) {
+    return 'El dominio del correo personal contiene un error tipográfico común (ej. gmai en vez de gmail).';
+  }
 
   // Correo institucional opcional
   const instEmail = String(data.institutionalEmail || '').trim();
-  if (instEmail && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(instEmail) || instEmail.indexOf('..') >= 0)) {
-    return 'El formato del correo institucional no es válido.';
+  if (instEmail) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(instEmail) || instEmail.indexOf('..') >= 0) {
+      return 'El formato del correo institucional no es válido.';
+    }
+    if (/\.(con|cmo|comm|coom|cpm|col)$/i.test(instEmail)) {
+      return 'El formato del correo institucional contiene una terminación inválida.';
+    }
   }
 
   if (!data.sede) return 'Selecciona una sede o localidad.';
@@ -503,6 +514,57 @@ function resetearSecuencia() {
   properties.deleteProperty(key);
   Logger.log('Contador reiniciado. El próximo código generado será ' + prefix + '0001');
 }
+
+// Función para corregir el correo en Google Sheets y reenviar el ticket con código de barras a la participante
+function reenviarConfirmacionParticipante() {
+  const correoErroneo = 'avatariagirlz@gmail.con';
+  const correoCorregido = 'avatariagirlz@gmail.com';
+  
+  const sheet = getSheet();
+  const headers = ensureHeaders(sheet);
+  const emailCol = headers.indexOf('Correo personal') + 1;
+  const dniCol = headers.indexOf('DNI') + 1;
+  const nameCol = headers.indexOf('Nombres y apellidos') + 1;
+  const codeCol = headers.indexOf('Código') + 1;
+  const sedeCol = headers.indexOf('Sede') + 1;
+  const careerCol = headers.indexOf('Carrera / Especialidad') + 1;
+  
+  const lastRow = sheet.getLastRow();
+  let encontrada = false;
+  
+  for (let r = 2; r <= lastRow; r++) {
+    const emailVal = String(sheet.getRange(r, emailCol).getValue()).trim().toLowerCase();
+    if (emailVal === correoErroneo || emailVal === correoCorregido) {
+      // 1. Corregir el correo en la hoja de Google Sheets
+      sheet.getRange(r, emailCol).setValue(correoCorregido);
+      SpreadsheetApp.flush();
+      
+      const code = String(sheet.getRange(r, codeCol).getValue()).trim();
+      const fullName = String(sheet.getRange(r, nameCol).getValue()).trim();
+      const dni = String(sheet.getRange(r, dniCol).getValue()).trim();
+      const sede = String(sheet.getRange(r, sedeCol).getValue()).trim();
+      const career = String(sheet.getRange(r, careerCol).getValue()).trim();
+      
+      // 2. Enviar el correo de confirmación oficial con su pase y código de barras
+      sendConfirmationEmail({
+        fullName: fullName,
+        personalEmail: correoCorregido,
+        dni: dni,
+        sede: sede,
+        career: career
+      }, code);
+      
+      Logger.log('¡Éxito! Correo corregido en Sheets y ticket enviado a: ' + correoCorregido + ' (Código: ' + code + ')');
+      encontrada = true;
+      break;
+    }
+  }
+  
+  if (!encontrada) {
+    Logger.log('No se encontró ninguna fila con ' + correoErroneo + ' ni ' + correoCorregido + '. Revisa manualmente la columna Correo personal.');
+  }
+}
+
 
 
 

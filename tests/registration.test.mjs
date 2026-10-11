@@ -26,6 +26,13 @@ test('correo Gmail: mayúsculas, puntos, alias + y googlemail; otros dominios ma
   assert.equal(registrationsOverlap({ dni: '90000002', personalEmail: 'q.a+e@gmail.com' }, { dni: '90000001', institutionalEmail: 'QA@gmail.com' }), true);
 });
 
+test('correos con erratas tipográficas (.con, .cmo, gmai.com) se rechazan en validación y backend', () => {
+  for (const badEmail of ['user@gmail.con', 'user@gmail.cmo', 'user@gmai.com', 'user@gamil.com', 'user@hotmial.com']) {
+    assert.ok(validateStep(1, { ...valid, personalEmail: badEmail }).personalEmail);
+    assert.equal(createHarness().post({ ...valid, personalEmail: badEmail }).code, 'VALIDATION');
+  }
+});
+
 test('cada campo obligatorio se valida también cuando se omite en un POST directo', () => {
   for (const field of ['fullName', 'dni', 'phone', 'personalEmail', 'institution', 'academicLevel', 'sede', 'career', 'skills', 'contributionAreas', 'challengeInterest', 'availability', 'termsAccepted']) {
     const payload = { ...valid };
