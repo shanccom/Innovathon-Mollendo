@@ -3,7 +3,7 @@
  * Despliega como "Ejecutarse como:Yo" y "Quién tiene acceso:Cualquier persona".
  */
 
-const CONFIG = {
+var CONFIG = {
   PRODUCTION_SPREADSHEET_ID: '1U48ftJJns3-4waJrt4A4uaI4OBNQoeyg1sOzzvXllI8',
   SHEET_NAME: 'Registros',
   CODE_PREFIX: 'IM',
@@ -108,8 +108,10 @@ function doPost(event) {
     const nextRow = sheet.getLastRow() + 1;
     if (nextRow > sheet.getMaxRows()) sheet.insertRowsAfter(sheet.getMaxRows(), 100);
     // Impide perder el cero inicial del DNI y mantiene el celular como texto.
-    sheet.getRange(nextRow, headers.indexOf('DNI') + 1).setNumberFormat('@');
-    sheet.getRange(nextRow, headers.indexOf('Número de celular') + 1).setNumberFormat('@');
+    const dniCol = headers.indexOf('DNI') + 1;
+    if (dniCol > 0) sheet.getRange(nextRow, dniCol).setNumberFormat('@');
+    const phoneCol = headers.indexOf('Número de celular') + 1;
+    if (phoneCol > 0) sheet.getRange(nextRow, phoneCol).setNumberFormat('@');
     sheet.getRange(nextRow, 1, 1, row.length).setValues([row]);
     SpreadsheetApp.flush();
     saved = { data: data, code: code, registeredAt: now.toISOString() };
@@ -170,7 +172,8 @@ function emailIdentity(value) {
 function normalizePayload(input) {
   const data = {};
   CONFIG.FIELDS.forEach(function(field) {
-    data[field] = input && typeof input[field] === 'string' ? input[field].trim() : '';
+    const val = input ? input[field] : '';
+    data[field] = val !== undefined && val !== null ? String(val).trim() : '';
   });
   data.personalEmail = data.personalEmail.toLowerCase();
   data.institutionalEmail = data.institutionalEmail.toLowerCase();
@@ -186,7 +189,14 @@ function headerIndex(headers, label) {
 }
 
 function ensureHeaders(sheet) {
-  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(String);
+  const lastCol = sheet.getLastColumn();
+  if (lastCol === 0) {
+    sheet.appendRow(CONFIG.HEADERS);
+    sheet.setFrozenRows(1);
+    sheet.getRange(1, 1, 1, CONFIG.HEADERS.length).setFontWeight('bold');
+    return CONFIG.HEADERS.slice();
+  }
+  const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(String);
   // Reconoce el esquema de 18 columnas existente; nunca reordena sus datos.
   const missing = CONFIG.HEADERS.filter(function(header) { return headerIndex(headers, header) < 0; });
   if (missing.length) {
@@ -202,12 +212,16 @@ function nextRegistrationCode(sheet, headers) {
   const prefix = CONFIG.CODE_PREFIX + '-' + new Date().getFullYear() + '-';
   const properties = PropertiesService.getScriptProperties();
   const key = 'SEQUENCE_' + sheet.getParent().getId() + '_' + prefix;
-  let sequence = Number(properties.getProperty(key)) || 0;
+  let sequence = 0;
   if (sheet.getLastRow() > 1) {
-    sheet.getRange(2, headers.indexOf('Código') + 1, sheet.getLastRow() - 1, 1).getValues().forEach(function(row) {
-      const code = String(row[0]);
-      if (code.indexOf(prefix) === 0) sequence = Math.max(sequence, Number(code.slice(prefix.length)) || 0);
-    });
+    sequence = Number(properties.getProperty(key)) || 0;
+    const codeCol = headers.indexOf('Código') + 1;
+    if (codeCol > 0) {
+      sheet.getRange(2, codeCol, sheet.getLastRow() - 1, 1).getValues().forEach(function(row) {
+        const code = String(row[0]);
+        if (code.indexOf(prefix) === 0) sequence = Math.max(sequence, Number(code.slice(prefix.length)) || 0);
+      });
+    }
   }
   properties.setProperty(key, String(sequence + 1));
   return prefix + String(sequence + 1).padStart(4, '0');
@@ -474,10 +488,22 @@ function testEmail() {
     fullName: 'Fernando Garambel',
     personalEmail: 'fgarambelm@gmail.com',
     dni: '73268408',
+    phone: '958342111',
     sede: 'Mollendo / Provincia de Islay',
     career: 'Tecnología: Ingeniería de Sistemas, Software, Informática y afines'
   }, 'IM-2026-TEST');
-  Logger.log('Proceso de testEmail finalizado.');
+  Logger.log('Proceso de testEmail finalizado. Revisa tu bandeja de entrada en fgarambelm@gmail.com');
 }
+
+// Función auxiliar para reiniciar el contador si limpias tu hoja de cálculo.
+function resetearSecuencia() {
+  const sheet = getSheet();
+  const prefix = CONFIG.CODE_PREFIX + '-' + new Date().getFullYear() + '-';
+  const properties = PropertiesService.getScriptProperties();
+  const key = 'SEQUENCE_' + sheet.getParent().getId() + '_' + prefix;
+  properties.deleteProperty(key);
+  Logger.log('Contador reiniciado. El próximo código generado será ' + prefix + '0001');
+}
+
 
 
