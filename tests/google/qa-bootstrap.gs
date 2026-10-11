@@ -42,7 +42,7 @@ function auditQa() {
 function smokeQa() {
   if (!isTestMode()) throw new Error('Prueba solo disponible en QA.');
   const sheet = getSheet();
-  if (sheet.getParent().getId() === CONFIG.PRODUCTION_SPREADSHEET_ID) throw new Error('Destino prohibido.');
+  if (sheet.getParent().getId() === REGISTRATION_CONFIG.PRODUCTION_SPREADSHEET_ID) throw new Error('Destino prohibido.');
   const run = String(Date.now());
   const base = {
     fullName: 'Participante Prueba', dni: '99000001', phone: '900000001',

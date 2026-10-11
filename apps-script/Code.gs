@@ -3,7 +3,7 @@
  * Despliega como "Ejecutarse como:Yo" y "Quién tiene acceso:Cualquier persona".
  */
 
-var CONFIG = {
+var REGISTRATION_CONFIG = {
   PRODUCTION_SPREADSHEET_ID: '1U48ftJJns3-4waJrt4A4uaI4OBNQoeyg1sOzzvXllI8',
   SHEET_NAME: 'Registros',
   CODE_PREFIX: 'IM',
@@ -64,7 +64,7 @@ function doGet() {
     testMode: isTestMode(),
     testSpreadsheetId: isTestMode() ? PropertiesService.getScriptProperties().getProperty('QA_SPREADSHEET_ID') : undefined,
     message: 'Innovathon Mollendo · endpoint activo',
-    headers: CONFIG.HEADERS,
+    headers: REGISTRATION_CONFIG.HEADERS,
   });
 }
 
@@ -102,8 +102,8 @@ function doPost(event) {
     const row = new Array(headers.length).fill('');
     row[headers.indexOf('Código')] = code;
     row[headers.indexOf('Fecha de registro')] = now;
-    CONFIG.FIELDS.forEach(function(field, index) {
-      row[headerIndex(headers, CONFIG.HEADERS[index + 2])] = formatValue(data[field]);
+    REGISTRATION_CONFIG.FIELDS.forEach(function(field, index) {
+      row[headerIndex(headers, REGISTRATION_CONFIG.HEADERS[index + 2])] = formatValue(data[field]);
     });
     const nextRow = sheet.getLastRow() + 1;
     if (nextRow > sheet.getMaxRows()) sheet.insertRowsAfter(sheet.getMaxRows(), 100);
@@ -171,7 +171,7 @@ function emailIdentity(value) {
 
 function normalizePayload(input) {
   const data = {};
-  CONFIG.FIELDS.forEach(function(field) {
+  REGISTRATION_CONFIG.FIELDS.forEach(function(field) {
     const val = input ? input[field] : '';
     data[field] = val !== undefined && val !== null ? String(val).trim() : '';
   });
@@ -191,14 +191,14 @@ function headerIndex(headers, label) {
 function ensureHeaders(sheet) {
   const lastCol = sheet.getLastColumn();
   if (lastCol === 0) {
-    sheet.appendRow(CONFIG.HEADERS);
+    sheet.appendRow(REGISTRATION_CONFIG.HEADERS);
     sheet.setFrozenRows(1);
-    sheet.getRange(1, 1, 1, CONFIG.HEADERS.length).setFontWeight('bold');
-    return CONFIG.HEADERS.slice();
+    sheet.getRange(1, 1, 1, REGISTRATION_CONFIG.HEADERS.length).setFontWeight('bold');
+    return REGISTRATION_CONFIG.HEADERS.slice();
   }
   const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(String);
   // Reconoce el esquema de 18 columnas existente; nunca reordena sus datos.
-  const missing = CONFIG.HEADERS.filter(function(header) { return headerIndex(headers, header) < 0; });
+  const missing = REGISTRATION_CONFIG.HEADERS.filter(function(header) { return headerIndex(headers, header) < 0; });
   if (missing.length) {
     const needed = headers.length + missing.length;
     if (needed > sheet.getMaxColumns()) sheet.insertColumnsAfter(sheet.getMaxColumns(), needed - sheet.getMaxColumns());
@@ -209,7 +209,7 @@ function ensureHeaders(sheet) {
 }
 
 function nextRegistrationCode(sheet, headers) {
-  const prefix = CONFIG.CODE_PREFIX + '-' + new Date().getFullYear() + '-';
+  const prefix = REGISTRATION_CONFIG.CODE_PREFIX + '-' + new Date().getFullYear() + '-';
   const properties = PropertiesService.getScriptProperties();
   const key = 'SEQUENCE_' + sheet.getParent().getId() + '_' + prefix;
   let sequence = Number(properties.getProperty(key)) || 0;
@@ -373,7 +373,7 @@ function setup() {
     ensureHeaders(sheet);
     sheet.setFrozenRows(1);
     SpreadsheetApp.flush();
-    return CONFIG.SHEET_NAME;
+    return REGISTRATION_CONFIG.SHEET_NAME;
   } finally {
     lock.releaseLock();
   }
@@ -385,19 +385,19 @@ function getSheet() {
   if (isTestMode()) {
     const bound = SpreadsheetApp.getActive();
     const testId = PropertiesService.getScriptProperties().getProperty('QA_SPREADSHEET_ID');
-    if (!testId || testId === CONFIG.PRODUCTION_SPREADSHEET_ID || (bound && testId === bound.getId())) throw new Error('QA necesita una hoja separada.');
+    if (!testId || testId === REGISTRATION_CONFIG.PRODUCTION_SPREADSHEET_ID || (bound && testId === bound.getId())) throw new Error('QA necesita una hoja separada.');
     book = SpreadsheetApp.openById(testId);
   } else {
     // Un Web App no tiene una hoja activa: usa el destino fijo autorizado.
-    book = SpreadsheetApp.openById(CONFIG.PRODUCTION_SPREADSHEET_ID);
+    book = SpreadsheetApp.openById(REGISTRATION_CONFIG.PRODUCTION_SPREADSHEET_ID);
   }
   if (!book) throw new Error('No hay hoja vinculada.');
-  const sheet = book.getSheetByName(CONFIG.SHEET_NAME) || book.insertSheet(CONFIG.SHEET_NAME);
+  const sheet = book.getSheetByName(REGISTRATION_CONFIG.SHEET_NAME) || book.insertSheet(REGISTRATION_CONFIG.SHEET_NAME);
 
   if (sheet.getLastRow() === 0) {
-    sheet.appendRow(CONFIG.HEADERS);
+    sheet.appendRow(REGISTRATION_CONFIG.HEADERS);
     sheet.setFrozenRows(1);
-    sheet.getRange(1, 1, 1, CONFIG.HEADERS.length).setFontWeight('bold');
+    sheet.getRange(1, 1, 1, REGISTRATION_CONFIG.HEADERS.length).setFontWeight('bold');
   }
 
   return sheet;
@@ -497,7 +497,7 @@ function testEmail() {
 // Función auxiliar para reiniciar el contador si limpias tu hoja de cálculo.
 function resetearSecuencia() {
   const sheet = getSheet();
-  const prefix = CONFIG.CODE_PREFIX + '-' + new Date().getFullYear() + '-';
+  const prefix = REGISTRATION_CONFIG.CODE_PREFIX + '-' + new Date().getFullYear() + '-';
   const properties = PropertiesService.getScriptProperties();
   const key = 'SEQUENCE_' + sheet.getParent().getId() + '_' + prefix;
   properties.deleteProperty(key);
