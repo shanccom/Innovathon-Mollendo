@@ -59,7 +59,7 @@ const CONFIG = {
 function doGet() {
   return jsonResponse({
     success: true,
-    version: 'v3.0-registro-concurrente',
+    version: 'v3.1-urls-directas',
     capabilities: { phone: true, atomicDuplicates: true },
     testMode: isTestMode(),
     testSpreadsheetId: isTestMode() ? PropertiesService.getScriptProperties().getProperty('QA_SPREADSHEET_ID') : undefined,
@@ -230,23 +230,9 @@ function sendConfirmationEmail(data, code) {
 
     const subject = '¡Inscripción Recibida! · Innovathon Mollendo 2026';
 
-    // Banners con inlineImages (CID) para que Gmail los muestre automáticamente sin bloquearlos
-    let inlineImages = {};
-    let topSrc = 'https://innovathonmollendo.tech/assets/email-banner-top.png';
-    let bottomSrc = 'https://innovathonmollendo.tech/assets/email-banner-bottom.png';
-
-    try {
-      const topBlob = UrlFetchApp.fetch(topSrc).getBlob().setName('bannerTop.png');
-      const bottomBlob = UrlFetchApp.fetch(bottomSrc).getBlob().setName('bannerBottom.png');
-      inlineImages = {
-        bannerTop: topBlob,
-        bannerBottom: bottomBlob,
-      };
-      topSrc = 'cid:bannerTop';
-      bottomSrc = 'cid:bannerBottom';
-    } catch (fetchErr) {
-      console.warn('UrlFetchApp fallback a URLs externas: ' + fetchErr.message);
-    }
+    const topBannerUrl = 'https://innovathonmollendo.tech/assets/email-banner-top.png';
+    const bottomBannerUrl = 'https://innovathonmollendo.tech/assets/email-banner-bottom.png';
+    const barcodeUrl = 'https://bwipjs-api.metafloor.com/?bcid=code128&text=' + encodeURIComponent(code) + '&scale=2&height=12&includetext';
 
     const htmlBody = `
 <!DOCTYPE html>
@@ -260,7 +246,7 @@ function sendConfirmationEmail(data, code) {
     
     <!-- Top Hero Banner Oficial (banner_tally_25_oficial.png) -->
     <div style="background-color: #070c20; text-align: center; border-bottom: 1px solid #1b254b; line-height: 0;">
-      <img src="${topSrc}" alt="Innovathon Mollendo 2026" width="580" border="0" style="width: 100%; max-width: 580px; height: auto; display: block; margin: 0 auto; border: 0;" />
+      <img src="${topBannerUrl}" alt="Innovathon Mollendo 2026" width="580" border="0" style="width: 100%; max-width: 580px; height: auto; display: block; margin: 0 auto; border: 0;" />
     </div>
 
     <!-- Header Section con Badge y Título -->
@@ -303,8 +289,7 @@ function sendConfirmationEmail(data, code) {
           Pase de Acreditación Presencial
         </div>
         <div style="display: inline-block; background: #ffffff; padding: 10px 18px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.4);">
-          <img src="https://bwipjs-api.metafloor.com/?bcid=code128&text=${encodeURIComponent(code)}&scale=2&height=12&includetext" 
-               alt="Código: ${code}" width="280" border="0" style="display: block; max-width: 280px; height: auto;" />
+          <img src="${barcodeUrl}" alt="Código: ${code}" width="280" border="0" style="display: block; max-width: 280px; height: auto;" />
         </div>
         <p style="color: #94a3b8; font-size: 11px; margin: 10px 0 0;">
           Presenta este código en la mesa de ingreso el 17 y 18 de Diciembre.
@@ -324,7 +309,7 @@ function sendConfirmationEmail(data, code) {
     <!-- Pie de Correo con Banner Castillo Forga (banner_tally_25_castillo.png) -->
     <div style="background-color: #060a1c; border-top: 1px solid #1b254b;">
       <div style="line-height: 0; text-align: center;">
-        <img src="${bottomSrc}" alt="Innovathon Mollendo 2026 · Castillo Forga" width="580" border="0" style="width: 100%; max-width: 580px; height: auto; display: block; margin: 0 auto; border: 0;" />
+        <img src="${bottomBannerUrl}" alt="Innovathon Mollendo 2026 · Castillo Forga" width="580" border="0" style="width: 100%; max-width: 580px; height: auto; display: block; margin: 0 auto; border: 0;" />
       </div>
       <div style="text-align: center; padding: 18px 24px 22px;">
         <p style="font-size: 11px; color: #94a3b8; margin: 0 0 6px; font-weight: 500;">
@@ -349,19 +334,14 @@ function sendConfirmationEmail(data, code) {
       'Correo registrado: ' + recipient + '\n\n' +
       'Visita la web oficial: https://innovathonmollendo.tech';
 
-    const emailOptions = {
+    MailApp.sendEmail({
       to: recipient,
       subject: subject,
       body: plainText,
       htmlBody: htmlBody,
       name: 'Innovathon Mollendo 2026',
-    };
+    });
 
-    if (Object.keys(inlineImages).length > 0) {
-      emailOptions.inlineImages = inlineImages;
-    }
-
-    MailApp.sendEmail(emailOptions);
     console.log('Correo de confirmación enviado para ' + code);
     return true;
   } catch (error) {
@@ -484,10 +464,7 @@ function jsonResponse(payload) {
 // Al ejecutarse SIN try/catch, Google detecta la llamada y muestra el diálogo modal de autorización.
 function autorizarPermisos() {
   const miCorreo = Session.getActiveUser().getEmail() || 'fgarambelm@gmail.com';
-  // Provoca la detección de UrlFetchApp para autorizar imágenes embebidas
-  UrlFetchApp.fetch('https://innovathonmollendo.tech/assets/email-banner-top.png');
-  // Provoca la detección de MailApp
-  MailApp.sendEmail(miCorreo, 'Autorización exitosa · Innovathon Mollendo 2026', '¡Los permisos de envío de correos y descarga de imágenes han sido autorizados correctamente!');
+  MailApp.sendEmail(miCorreo, 'Autorización exitosa · Innovathon Mollendo 2026', '¡Los permisos de envío de correos han sido autorizados correctamente!');
   Logger.log('¡Permisos autorizados y correo enviado a ' + miCorreo + '!');
 }
 
