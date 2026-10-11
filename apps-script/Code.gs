@@ -59,7 +59,7 @@ var REGISTRATION_CONFIG = {
 function doGet(e) {
   if (e && e.parameter && (e.parameter.action === 'read_participants' || e.parameter.action === 'data')) {
     try {
-      const sheet = getSheet();
+      const sheet = getRegistrationSheet();
       const data = sheet.getDataRange().getValues();
       if (data.length <= 1) {
         return jsonResponse({ success: true, total: 0, data: [] });
@@ -120,7 +120,7 @@ function doPost(event) {
     lock = LockService.getScriptLock();
     locked = lock.tryLock(10000);
     if (!locked) return jsonResponse({ success: false, code: 'BUSY', retryable: true, error: 'Hay muchas inscripciones en este momento. Espera unos segundos y vuelve a intentar con los mismos datos.' });
-    const sheet = getSheet();
+    const sheet = getRegistrationSheet();
     const headers = ensureHeaders(sheet);
     // La consulta y la escritura comparten el mismo bloqueo: solo un ganador.
     const duplicate = findDuplicate(sheet, data, headers);
@@ -390,7 +390,7 @@ function setup() {
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
   try {
-    const sheet = getSheet();
+    const sheet = getRegistrationSheet();
     ensureHeaders(sheet);
     sheet.setFrozenRows(1);
     SpreadsheetApp.flush();
@@ -400,8 +400,8 @@ function setup() {
   }
 }
 
-// Devuelve la hoja de destino creándola si todavía no existe.
-function getSheet() {
+// Devuelve la hoja de destino creándola si todavía no existe (blindado contra colisiones).
+function getRegistrationSheet() {
   let book;
   if (isTestMode()) {
     const bound = SpreadsheetApp.getActive();
@@ -422,6 +422,14 @@ function getSheet() {
   }
 
   return sheet;
+}
+
+function getSheet(sheetName) {
+  if (!sheetName || sheetName === REGISTRATION_CONFIG.SHEET_NAME) {
+    return getRegistrationSheet();
+  }
+  const book = SpreadsheetApp.getActive() || SpreadsheetApp.openById(REGISTRATION_CONFIG.PRODUCTION_SPREADSHEET_ID);
+  return book.getSheetByName(sheetName) || book.insertSheet(sheetName);
 }
 
 // Lee el cuerpo JSON enviado por el frontend.
@@ -528,7 +536,7 @@ function testEmail() {
 
 // Función auxiliar para reiniciar el contador si limpias tu hoja de cálculo.
 function resetearSecuencia() {
-  const sheet = getSheet();
+  const sheet = getRegistrationSheet();
   const prefix = REGISTRATION_CONFIG.CODE_PREFIX + '-' + new Date().getFullYear() + '-';
   const properties = PropertiesService.getScriptProperties();
   const key = 'SEQUENCE_' + sheet.getParent().getId() + '_' + prefix;
@@ -541,7 +549,7 @@ function reenviarConfirmacionParticipante() {
   const correoErroneo = 'avatariagirlz@gmail.con';
   const correoCorregido = 'avatariagirlz@gmail.com';
   
-  const sheet = getSheet();
+  const sheet = getRegistrationSheet();
   const headers = ensureHeaders(sheet);
   const emailCol = headers.indexOf('Correo personal') + 1;
   const dniCol = headers.indexOf('DNI') + 1;
@@ -635,7 +643,7 @@ function handleSendCampaign(contents) {
     }
 
     const campaignName = String(contents.campaignName || 'Campaña sin título').trim();
-    const sheet = getSheet();
+    const sheet = getRegistrationSheet();
     const ss = (sheet && sheet.getParent && typeof sheet.getParent().getSheetByName === 'function')
       ? sheet.getParent()
       : (typeof SpreadsheetApp !== 'undefined' && typeof SpreadsheetApp.getActive === 'function' ? SpreadsheetApp.getActive() : null);
