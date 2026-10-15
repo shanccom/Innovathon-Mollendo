@@ -40,7 +40,7 @@ export function RegistrationSuccess({ receipt, onReset }) {
             <span className="font-semibold text-white">{values.dni}</span>
           </div>
           <div>
-            <span className="block font-medium text-slate-400">Sede</span>
+            <span className="block font-medium text-slate-400">Sede de estudios</span>
             <span className="font-semibold text-white">{values.sede}</span>
           </div>
           <div className="col-span-2">

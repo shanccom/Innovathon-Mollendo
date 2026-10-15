@@ -19,7 +19,12 @@ let passed = 0;
 try {
   await vite.listen();
   const base = `http://127.0.0.1:${vite.httpServer.address().port}`;
-  browser = await chromium.launch({ headless: true, ...(process.platform === 'win32' ? { channel: process.env.E2E_BROWSER || 'msedge' } : {}) });
+  browser = await chromium.launch({
+    headless: true,
+    executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || (process.platform === 'linux' ? '/usr/bin/chromium' : undefined),
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    ...(process.platform === 'win32' ? { channel: process.env.E2E_BROWSER || 'msedge' } : {}),
+  });
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
   const page = await context.newPage();
   const pageErrors = [];
