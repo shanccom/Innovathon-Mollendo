@@ -62,7 +62,7 @@ function doGet(e) {
   if (e && e.parameter && (e.parameter.action === 'read_participants' || e.parameter.action === 'data')) {
     try {
       const sheet = getRegistrationSheet();
-      const data = sheet.getDataRange().getValues();
+      const data = readSheetValues(sheet);
       if (data.length <= 1) {
         return jsonResponse({ success: true, total: 0, data: [] });
       }
@@ -78,6 +78,10 @@ function doGet(e) {
     } catch (err) {
       return jsonResponse({ success: false, error: err.message });
     }
+  }
+
+  if (e && e.parameter && e.parameter.action === 'attendance') {
+    return readAttendanceMatrix();
   }
 
   return jsonResponse({
@@ -110,6 +114,9 @@ function doPost(event) {
     }
     if (action === 'send_campaign') {
       return handleSendCampaign(payload);
+    }
+    if (['markAttendance', 'unmarkAttendance', 'clearSession'].indexOf(action) >= 0) {
+      return handleAttendanceAction(payload);
     }
 
     // 2. Flujo de inscripción pública (con límite de tamaño para evitar abusos)
@@ -437,6 +444,213 @@ function getSheet(sheetName) {
   return book.getSheetByName(sheetName) || book.insertSheet(sheetName);
 }
 
+  function readSheetValues(sheet) {
+    const rows = sheet.getLastRow();
+    const columns = sheet.getLastColumn();
+    return rows && columns ? sheet.getRange(1, 1, rows, columns).getValues() : [];
+  }
+
+  var ATTENDANCE_HEADERS = ['Código', 'DNI', 'Nombres y Apellidos'];
+  var ATTENDANCE_TOTAL = 'Total Asistencia';
+
+  function attendanceBook() {
+    const parent = getRegistrationSheet().getParent();
+    return parent && typeof parent.getSheetByName === 'function'
+      ? parent
+      : SpreadsheetApp.openById(REGISTRATION_CONFIG.PRODUCTION_SPREADSHEET_ID);
+  }
+
+  function attendanceSheet(create) {
+    const book = attendanceBook();
+    const existing = book.getSheetByName('Asistencias');
+    return existing || (create ? book.insertSheet('Asistencias') : null);
+  }
+
+  function canonicalSession(value) {
+    const text = String(value || '').trim().toLowerCase().replace(/[-_]+/g, ' ');
+    const match = text.match(/(?:asistencia|sesion|sesión)?\s*(\d+)/);
+    if (!match) return '';
+    const number = Number(match[1]);
+    return number >= 1 && number <= 6 ? 'Asistencia ' + number : '';
+  }
+
+  function attendanceHeaders(sheet) {
+    const values = sheet ? readSheetValues(sheet) : [];
+    return values.length ? values[0].map(String) : [];
+  }
+
+  function ensureAttendanceHeaders(sheet, sessions) {
+    const current = attendanceHeaders(sheet);
+    const sessionNames = [];
+    current.forEach(function(header) {
+      const session = canonicalSession(header);
+      if (session && sessionNames.indexOf(session) < 0) sessionNames.push(session);
+    });
+    (sessions || []).forEach(function(session) {
+      const canonical = canonicalSession(session);
+      if (canonical && sessionNames.indexOf(canonical) < 0) sessionNames.push(canonical);
+    });
+    sessionNames.sort();
+    const headers = ATTENDANCE_HEADERS.concat(sessionNames, ATTENDANCE_TOTAL);
+    if (!current.length) {
+      headers.forEach(function(header, index) { sheet.getRange(1, index + 1).setValue(header); });
+    } else if (JSON.stringify(current) !== JSON.stringify(headers)) {
+      const rows = readSheetValues(sheet);
+      const oldTotal = current.indexOf(ATTENDANCE_TOTAL);
+      const rebuilt = [headers].concat(rows.slice(1).map(function(row) {
+        const result = new Array(headers.length).fill('');
+        current.forEach(function(header, index) {
+          const target = headers.indexOf(header);
+          if (target >= 0) result[target] = row[index] || '';
+        });
+        if (oldTotal >= 0) result[headers.length - 1] = row[oldTotal] || '';
+        return result;
+      }));
+      sheet.getRange(1, 1, rebuilt.length, headers.length).setValues(rebuilt);
+    }
+    return headers;
+  }
+
+  function attendanceRows(sheet) {
+    const values = readSheetValues(sheet);
+    return values.length > 1 ? values.slice(1) : [];
+  }
+
+  function attendanceTotal(row, headers) {
+    return headers.slice(3, -1).reduce(function(total, _, index) {
+      return total + (String(row[index + 3] || '').trim() ? 1 : 0);
+    }, 0);
+  }
+
+  function readAttendanceMatrix() {
+    try {
+      const sheet = attendanceSheet(false);
+      if (!sheet) return jsonResponse({ success: true, headers: [], data: [], total: 0 });
+      const values = readSheetValues(sheet);
+      if (values.length < 1) return jsonResponse({ success: true, headers: [], data: [], total: 0 });
+      const headers = values[0].map(String);
+      const data = values.slice(1).map(function(row) {
+        const item = {};
+        headers.forEach(function(header, index) { item[header] = row[index] === undefined ? '' : String(row[index]); });
+        return item;
+      });
+      return jsonResponse({ success: true, headers: headers, data: data, total: data.length });
+    } catch (error) {
+      return jsonResponse({ success: false, error: error.message });
+    }
+  }
+
+  function handleAttendanceAction(payload) {
+    try {
+      const sheet = attendanceSheet(true);
+      const session = canonicalSession(payload.sessionName || payload.sessionId);
+      const headers = ensureAttendanceHeaders(sheet, session ? [session] : []);
+      const code = String(payload.codigo || '').trim();
+      const rowValues = attendanceRows(sheet);
+      let rowIndex = rowValues.findIndex(function(row) { return String(row[0] || '').trim() === code; });
+      if (payload.action === 'clearSession') {
+        const sessionColumn = headers.indexOf(canonicalSession(payload.sessionName));
+        rowValues.forEach(function(item) { if (sessionColumn >= 0) item[sessionColumn] = ''; });
+        rowValues.forEach(function(item) { item[headers.length - 1] = attendanceTotal(item, headers); });
+        sheet.getRange(1, 1, rowValues.length + 1, headers.length).setValues([headers].concat(rowValues));
+        return jsonResponse({ success: true });
+      }
+      if (payload.action === 'markAttendance' && rowIndex < 0) {
+        const row = new Array(headers.length).fill('');
+        row[0] = code;
+        row[1] = String(payload.dni || '').trim();
+        row[2] = String(payload.nombre || '').trim();
+        rowValues.push(row);
+        rowIndex = rowValues.length - 1;
+      }
+      if (rowIndex < 0) return jsonResponse({ success: false, error: 'Participante no encontrado.' });
+      const row = rowValues[rowIndex];
+      if (payload.action === 'markAttendance') row[headers.indexOf(session)] = String(payload.timestamp || new Date().toISOString());
+      if (payload.action === 'unmarkAttendance') row[headers.indexOf(session)] = '';
+      rowValues.forEach(function(item) { item[headers.length - 1] = attendanceTotal(item, headers); });
+      sheet.getRange(1, 1, rowValues.length + 1, headers.length).setValues([headers].concat(rowValues));
+      return jsonResponse({ success: true });
+    } catch (error) {
+      return jsonResponse({ success: false, error: error.message });
+    }
+  }
+
+  function repararMatrizAsistencia(sheet) {
+    const values = readSheetValues(sheet);
+    if (!values.length) return 'Matriz vacía.';
+    const sessions = values[0].map(canonicalSession).filter(Boolean);
+    const headers = ensureAttendanceHeaders(sheet, sessions);
+    const rows = values.slice(1).map(function(row) {
+      const result = new Array(headers.length).fill('');
+      result[0] = row[0] || '';
+      result[1] = row[1] || '';
+      result[2] = row[2] || '';
+      values[0].forEach(function(header, index) {
+        const session = canonicalSession(header);
+        const target = headers.indexOf(session);
+        if (target >= 0 && row[index]) result[target] = row[index];
+      });
+      result[headers.length - 1] = attendanceTotal(result, headers);
+      return result;
+    });
+    sheet.getRange(1, 1, rows.length + 1, headers.length).setValues([headers].concat(rows));
+    return 'Matriz reparada.';
+  }
+
+  function rebuildAttendanceMatrix() {
+    const registration = getRegistrationSheet();
+    const source = attendanceBook().getSheetByName('FormAsistencia');
+    const existing = attendanceSheet(true);
+    const registrations = readSheetValues(registration);
+    const answers = source ? readSheetValues(source) : [];
+    const sessions = ['Asistencia 1', 'Asistencia 2', 'Asistencia 3', 'Asistencia 4', 'Asistencia 5', 'Asistencia 6'];
+    const headers = ensureAttendanceHeaders(existing, sessions);
+    const old = readSheetValues(existing);
+    const oldHeaders = old.length ? old[0].map(String) : [];
+    const oldRows = old.slice(1);
+    const manual = {};
+    oldRows.forEach(function(row) {
+      manual[String(row[0] || '')] = row;
+    });
+    const registrationHeaders = registrations.length ? registrations[0].map(String) : [];
+    const dniIndex = registrationHeaders.indexOf('DNI');
+    const codeIndex = registrationHeaders.indexOf('Código');
+    const nameIndex = registrationHeaders.findIndex(function(header) { return header.toLowerCase() === 'nombres y apellidos'; });
+    const resultRows = [];
+    const byDni = {};
+    registrations.slice(1).forEach(function(row) {
+      const dni = String(row[dniIndex] || '').padStart(8, '0');
+      if (dni) {
+        const output = new Array(headers.length).fill('');
+        output[0] = row[codeIndex] || '';
+        output[1] = dni;
+        output[2] = row[nameIndex] || '';
+        const prior = manual[output[0]];
+        if (prior) oldHeaders.forEach(function(header, index) {
+          const target = headers.indexOf(header);
+          if (target >= 0 && prior[index]) output[target] = prior[index];
+        });
+        byDni[dni] = output;
+        resultRows.push(output);
+      }
+    });
+    let matched = 0;
+    let unmatched = 0;
+    const answerHeaders = answers.length ? answers[0].map(String) : [];
+    const answerDni = answerHeaders.indexOf('DNI');
+    const answerSession = answerHeaders.indexOf('Sesión');
+    const answerDate = answerHeaders.indexOf('Marca temporal');
+    answers.slice(1).forEach(function(row) {
+      const target = byDni[String(row[answerDni] || '').padStart(8, '0')];
+      const session = canonicalSession(row[answerSession]);
+      if (!target || !session) { unmatched++; return; }
+      const index = headers.indexOf(session);
+      if (!target[index]) { matched++; target[index] = row[answerDate] || ''; }
+    });
+    resultRows.forEach(function(row) { row[headers.length - 1] = attendanceTotal(row, headers); });
+    existing.getRange(1, 1, resultRows.length + 1, headers.length).setValues([headers].concat(resultRows));
+    return { success: true, rows: resultRows.length, matched: matched, unmatched: unmatched };
+  }
 // Lee el cuerpo JSON enviado por el frontend.
 function readPayload(event) {
   const body = event && event.postData && event.postData.contents;
@@ -747,8 +961,4 @@ function handleSendCampaign(contents) {
     return jsonResponse({ success: false, error: 'Fallo al procesar campaña: ' + err.message });
   }
 }
-
-
-
-
 
