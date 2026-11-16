@@ -8,6 +8,21 @@ export default function RouteTransition() {
   const previousPath = useRef(location.pathname);
 
   useLayoutEffect(() => {
+    try {
+      const search = location.search || window.location?.search;
+      if (search) {
+        const params = new URLSearchParams(search);
+        const code = params.get('ref') || params.get('embajador') || params.get('codigo');
+        if (code && typeof sessionStorage !== 'undefined') {
+          sessionStorage.setItem('innovathon_ref', code.trim().toUpperCase());
+        }
+      }
+    } catch {
+      // Ignorar fallos de acceso a storage en entornos restringidos
+    }
+  }, [location.search]);
+
+  useLayoutEffect(() => {
     const changed = previousPath.current !== location.pathname;
     previousPath.current = location.pathname;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

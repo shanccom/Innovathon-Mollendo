@@ -65,8 +65,28 @@ test('migración de las 18 columnas conserva el orden y escribe cada dato bajo s
   for (const [header, value] of [['DNI', valid.dni], ['Número de celular', valid.phone], ['Nivel académico', valid.academicLevel], ['Sede', valid.sede], ['Carrera / Especialidad', valid.career]]) {
     assert.equal(h.rows[1][h.rows[0].indexOf(header)], value, header);
   }
-  assert.equal(h.rows[0].length, 22);
-  assert.equal(new Set(h.rows[0]).size, 22);
+  assert.equal(h.rows[0].length, 23);
+  assert.equal(new Set(h.rows[0]).size, 23);
+  assert.ok(h.rows[0].includes('Código de referido'));
+});
+
+test('código de referido opcional: vacío es válido, se normaliza a mayúsculas y valida longitud', () => {
+  const h = createHarness();
+  const res = h.post({ ...valid, referralCode: ' emb-mollendo-01 ' });
+  assert.equal(res.success, true);
+  const refIndex = h.rows[0].indexOf('Código de referido');
+  assert.ok(refIndex >= 0);
+  assert.equal(h.rows[1][refIndex], 'EMB-MOLLENDO-01');
+
+  // Campo opcional vacío
+  const h2 = createHarness();
+  const resEmpty = h2.post({ ...valid, referralCode: '' });
+  assert.equal(resEmpty.success, true);
+  assert.equal(h2.rows[1][refIndex], '');
+
+  // Exceder 50 caracteres debe ser rechazado
+  const h3 = createHarness();
+  assert.equal(h3.post({ ...valid, referralCode: 'A'.repeat(51) }).code, 'VALIDATION');
 });
 
 test('Web App guarda en la hoja autorizada aunque no exista una hoja activa', () => {

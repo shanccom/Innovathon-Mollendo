@@ -16,7 +16,30 @@ import { container } from '../../infrastructure/di/container';
 // Form state machine for the 3-step registration wizard.
 export function useRegistrationForm() {
   const [step, setStep] = useState(1);
-  const [values, setValues] = useState(createEmptyRegistration);
+  const [values, setValues] = useState(() => {
+    const initial = createEmptyRegistration();
+    if (typeof window !== 'undefined') {
+      try {
+        let code = '';
+        if (window.location?.search) {
+          const params = new URLSearchParams(window.location.search);
+          code = params.get('ref') || params.get('embajador') || params.get('codigo') || '';
+        }
+        if (!code && typeof sessionStorage !== 'undefined') {
+          code = sessionStorage.getItem('innovathon_ref') || '';
+        }
+        if (code) {
+          initial.referralCode = code.trim().toUpperCase().slice(0, 50);
+          if (typeof sessionStorage !== 'undefined') {
+            sessionStorage.setItem('innovathon_ref', initial.referralCode);
+          }
+        }
+      } catch {
+        // Ignorar fallos de acceso a storage en entornos restringidos
+      }
+    }
+    return initial;
+  });
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState('idle');
   const [message, setMessage] = useState('');
@@ -33,7 +56,10 @@ export function useRegistrationForm() {
 
   const handleChange = useCallback((event) => {
     const { name, value, type, checked } = event.target;
-    const nextValue = type === 'checkbox' ? checked : value;
+    let nextValue = type === 'checkbox' ? checked : value;
+    if (name === 'referralCode' && typeof nextValue === 'string') {
+      nextValue = nextValue.toUpperCase();
+    }
 
     setValues((current) => ({ ...current, [name]: nextValue }));
     setErrors((current) => (current[name] ? { ...current, [name]: '' } : current));

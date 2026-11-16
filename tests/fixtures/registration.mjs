@@ -7,7 +7,7 @@ export const validRegistration = {
   skills: 'Prueba automatizada de inscripción',
   contributionAreas: ['Desarrollo de Software / Programación'],
   challengeInterest: 'Reto 1: Desarrollo Económico, Turismo y Comercio Local',
-  referencePerson: '', portfolioUrl: '', availability: true, termsAccepted: true,
+  referencePerson: '', referralCode: '', portfolioUrl: '', availability: true, termsAccepted: true,
   source: 'qa_automatizado',
 };
 

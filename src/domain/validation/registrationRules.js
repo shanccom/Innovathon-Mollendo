@@ -178,6 +178,11 @@ export const registrationRules = {
       ? ''
       : 'Selecciona un eje temático o reto de interés (o elige Abierto).',
   referencePerson: () => '',
+  referralCode: (value) => {
+    const trimmed = typeof value === 'string' ? value.trim() : '';
+    if (trimmed.length > 50) return 'El código de referido no puede superar los 50 caracteres.';
+    return '';
+  },
   portfolioUrl: () => '',
   availability: (value) =>
     value === true ? '' : 'Debes confirmar tu disponibilidad presencial para las fechas del evento (17 y 18 de diciembre).',
@@ -200,7 +205,7 @@ export const STEP_FIELDS = {
     'otherInstitution',
     'academicLevel',
   ],
-  2: ['skills', 'contributionAreas', 'challengeInterest', 'referencePerson', 'portfolioUrl'],
+  2: ['skills', 'contributionAreas', 'challengeInterest', 'referencePerson', 'referralCode', 'portfolioUrl'],
   3: ['availability', 'termsAccepted'],
 };
 

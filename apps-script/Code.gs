@@ -28,6 +28,7 @@ var REGISTRATION_CONFIG = {
     'termsAccepted',
     'source',
     'phone',
+    'referralCode',
   ],
   HEADERS: [
     'Código',
@@ -52,6 +53,7 @@ var REGISTRATION_CONFIG = {
     'Aceptó términos',
     'Origen',
     'Número de celular',
+    'Código de referido',
   ],
 };
 
@@ -81,7 +83,7 @@ function doGet(e) {
   return jsonResponse({
     success: true,
     version: 'v3.3-comunicados',
-    capabilities: { phone: true, atomicDuplicates: true, announcements: true },
+    capabilities: { phone: true, atomicDuplicates: true, announcements: true, referrals: true },
     testMode: isTestMode(),
     testSpreadsheetId: isTestMode() ? PropertiesService.getScriptProperties().getProperty('QA_SPREADSHEET_ID') : undefined,
     message: 'Innovathon Mollendo · endpoint activo con soporte para Comunicados',
@@ -148,6 +150,8 @@ function doPost(event) {
     if (dniCol > 0) sheet.getRange(nextRow, dniCol).setNumberFormat('@');
     const phoneCol = headers.indexOf('Número de celular') + 1;
     if (phoneCol > 0) sheet.getRange(nextRow, phoneCol).setNumberFormat('@');
+    const refCol = headers.indexOf('Código de referido') + 1;
+    if (refCol > 0) sheet.getRange(nextRow, refCol).setNumberFormat('@');
     sheet.getRange(nextRow, 1, 1, row.length).setValues([row]);
     SpreadsheetApp.flush();
     saved = { data: data, code: code, registeredAt: now.toISOString() };
@@ -213,6 +217,7 @@ function normalizePayload(input) {
   });
   data.personalEmail = data.personalEmail.toLowerCase();
   data.institutionalEmail = data.institutionalEmail.toLowerCase();
+  data.referralCode = String(data.referralCode || '').trim().toUpperCase();
   data.contributionAreas = input && Array.isArray(input.contributionAreas) ? input.contributionAreas.filter(function(v) { return typeof v === 'string' && v.trim(); }).map(function(v) { return v.trim(); }) : [];
   data.availability = Boolean(input && input.availability === true);
   data.termsAccepted = Boolean(input && input.termsAccepted === true);
@@ -487,6 +492,7 @@ function validate(data) {
   if (data.skills.length > 500) return 'Las habilidades no pueden superar los 500 caracteres.';
   if (!data.availability) return 'Debes confirmar tu disponibilidad presencial.';
   if (!data.termsAccepted) return 'Debes aceptar los términos y condiciones.';
+  if (data.referralCode && data.referralCode.length > 50) return 'El código de referido no puede superar los 50 caracteres.';
   return '';
 }
 

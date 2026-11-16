@@ -13,6 +13,7 @@ import {
   Step2SingleWave,
   CompassIcon,
   ExternalLinkIcon,
+  TagIcon,
 } from './RegistrationIcons';
 
 const ICON_MAP = {
@@ -241,6 +242,42 @@ export function Step2SkillsTeam({
               className="w-full rounded-xl border border-slate-800 bg-[#0d1633]/70 py-3 pl-11 pr-4 text-sm text-white placeholder-slate-500 outline-none transition focus:border-[#b8da02] focus:ring-2 focus:ring-[#b8da02]/20"
             />
           </div>
+        </div>
+
+        {/* Código de referido / embajador */}
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between">
+            <label htmlFor="field-referralCode" className="text-xs font-semibold text-slate-300">
+              Código de referido o embajador <span className="text-xs font-normal text-slate-400">(opcional)</span>
+            </label>
+            {values.referralCode && (
+              <span className="text-[10px] font-semibold text-[#cbfb45] uppercase tracking-wider bg-[#cbfb45]/10 px-2 py-0.5 rounded-full border border-[#cbfb45]/20">
+                Embajador vinculado
+              </span>
+            )}
+          </div>
+          <div className="relative">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+              <TagIcon className="h-5 w-5 text-slate-500" />
+            </div>
+            <input
+              id="field-referralCode"
+              name="referralCode"
+              type="text"
+              maxLength={50}
+              placeholder="Ej: EMB-01 o CÓDIGO DE EMBAJADOR"
+              value={values.referralCode || ''}
+              onChange={onChange}
+              onBlur={onBlur}
+              className="w-full uppercase tracking-wider rounded-xl border border-slate-800 bg-[#0d1633]/70 py-3 pl-11 pr-4 text-sm text-white placeholder-slate-500 outline-none transition focus:border-[#b8da02] focus:ring-2 focus:ring-[#b8da02]/20"
+            />
+          </div>
+          <p className="text-[11px] text-slate-400">
+            Si fuiste invitado por un embajador de la Innovathon, escribe aquí su código.
+          </p>
+          {errors?.referralCode && (
+            <p className="text-xs text-rose-400 font-medium">{errors.referralCode}</p>
+          )}
         </div>
       </div>
 

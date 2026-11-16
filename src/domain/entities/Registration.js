@@ -22,6 +22,7 @@ export function createEmptyRegistration() {
     contributionAreas: [],
     challengeInterest: '',
     referencePerson: '',
+    referralCode: '',
     portfolioUrl: '',
 
     // Paso 3: Confirmación y Términos
@@ -55,6 +56,7 @@ export function createRegistration(input = {}) {
     contributionAreas,
     challengeInterest: cleanText(input.challengeInterest),
     referencePerson: cleanText(input.referencePerson),
+    referralCode: cleanText(input.referralCode).toUpperCase().slice(0, 50),
     portfolioUrl: cleanText(input.portfolioUrl),
     availability: input.availability === true,
     termsAccepted: input.termsAccepted === true,
